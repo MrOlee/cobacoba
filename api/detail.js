@@ -1,55 +1,45 @@
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const apiKey = process.env.INDOCAST_API_KEY || "bb47332ceca91e3a2c97128a40c798a69306400072cc4b5a352800697069e45c";
-  const { detailPath = "", se = "0" } = req.query;
+  const channelId = String(req.query.channelId || req.body?.channelId || "2");
+  const page = String(req.query.page || req.body?.page || "1");
 
-  if (!detailPath) {
-    return res.status(200).json({ success: false, error: "detailPath kosong" });
-  }
+  const targetUrl = "https://indocast.site/api/dramovnime/list";
+  const payload = JSON.stringify({
+    channelId: channelId,
+    page: page,
+    perPage: "24",
+    sort: "ForYou",
+    genre: "All",
+    country: "All"
+  });
 
-  const targetUrl = `https://indocast.site/api/dramovnime/detaildata?se=${se}&detailPath=${encodeURIComponent(detailPath)}`;
+  try {
+    const response = await fetch(targetUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Referer": "https://indocast.site/",
+        "Origin": "https://indocast.site"
+      },
+      body: payload
+    });
 
-  const headers = {
-    "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
-    "x-api-key": apiKey,
-    "Accept": "application/json, text/plain, */*"
-  };
-
-  async function tryFetch(url) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 6000);
+    const text = await response.text();
     try {
-      const response = await fetch(url, { method: "GET", headers, signal: controller.signal });
-      clearTimeout(timer);
-      const text = await response.text();
-      try {
-        const json = JSON.parse(text);
-        if (json && (json.data || json.chapterList || json.episodes)) return { success: true, data: json };
-        return { success: false };
-      } catch (e) {
-        return { success: false };
-      }
-    } catch (err) {
-      clearTimeout(timer);
-      return { success: false };
+      const data = JSON.parse(text);
+      return res.status(200).json(data);
+    } catch (e) {
+      return res.status(502).json({ error: "Indocast merespon non-JSON", raw: text.substring(0, 100) });
     }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
-
-  let r1 = await tryFetch(targetUrl);
-  if (r1.success) return res.status(200).json(r1.data);
-
-  let p2 = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-  let r2 = await tryFetch(p2);
-  if (r2.success) return res.status(200).json(r2.data);
-
-  let p3 = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
-  let r3 = await tryFetch(p3);
-  if (r3.success) return res.status(200).json(r3.data);
-
-  return res.status(200).json({ success: false, message: "Gagal memuat detail." });
 };
