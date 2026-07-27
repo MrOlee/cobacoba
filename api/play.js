@@ -10,42 +10,25 @@ module.exports = async (req, res) => {
 
   const targetUrl = `https://indocast.site/api/dramovnime/getplay?id=${id}&se=${se}&ep=${ep}&lang=in_id&detailPath=${encodeURIComponent(detailPath)}`;
 
-  const headers = {
-    "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
-    "x-api-key": apiKey,
-    "Accept": "application/json, text/plain, */*"
-  };
-
-  async function tryFetch(url) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 6000);
-    try {
-      const response = await fetch(url, { method: "GET", headers, signal: controller.signal });
-      clearTimeout(timer);
-      const text = await response.text();
-      try {
-        const json = JSON.parse(text);
-        if (json && (json.data || json.playUrl || json.url)) return { success: true, data: json };
-        return { success: false };
-      } catch (e) {
-        return { success: false };
+  try {
+    const response = await fetch(targetUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Referer": "https://indocast.site/"
       }
-    } catch (err) {
-      clearTimeout(timer);
-      return { success: false };
+    });
+
+    const text = await response.text();
+    try {
+      const data = JSON.parse(text);
+      return res.status(200).json(data);
+    } catch (e) {
+      return res.status(502).json({ error: "Indocast Play merespon non-JSON" });
     }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
-
-  let r1 = await tryFetch(targetUrl);
-  if (r1.success) return res.status(200).json(r1.data);
-
-  let p2 = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-  let r2 = await tryFetch(p2);
-  if (r2.success) return res.status(200).json(r2.data);
-
-  let p3 = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
-  let r3 = await tryFetch(p3);
-  if (r3.success) return res.status(200).json(r3.data);
-
-  return res.status(200).json({ success: false, message: "Gagal memuat video." });
 };
