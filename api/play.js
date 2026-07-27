@@ -8,21 +8,30 @@ module.exports = async (req, res) => {
   const apiKey = process.env.INDOCAST_API_KEY || "bb47332ceca91e3a2c97128a40c798a69306400072cc4b5a352800697069e45c";
   const { id = "", se = "1", ep = "1", detailPath = "" } = req.query;
 
-  const targetUrl = `https://indocast.site/api/dramovnime/getplay?id=${id}&se=${se}&ep=${ep}&lang=in_id&detailPath=${encodeURIComponent(detailPath)}`;
+  const headers = {
+    "Content-Type": "application/json",
+    "x-api-key": apiKey,
+    "User-Agent": "okhttp/4.12.0"
+  };
 
+  // Coba getplay
   try {
-    const response = await fetch(targetUrl, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "User-Agent": "okhttp/4.12.0"
-      }
-    });
+    const getplayUrl = `https://indocast.site/api/dramovnime/getplay?id=${id}&se=${se}&ep=${ep}&lang=in_id&detailPath=${encodeURIComponent(detailPath)}`;
+    const response = await fetch(getplayUrl, { method: "GET", headers });
+    const text = await response.text();
+    const data = JSON.parse(text);
+    const videoUrl = data?.data?.playUrl || data?.playUrl || data?.url || data?.embed;
+    if (videoUrl) return res.status(200).json(data);
+  } catch (e) {}
+
+  // Fallback ke endpoint play
+  try {
+    const playUrl = `https://indocast.site/api/dramovnime/play?se=${se}&ep=${ep}`;
+    const response = await fetch(playUrl, { method: "GET", headers });
     const text = await response.text();
     const data = JSON.parse(text);
     return res.status(200).json(data);
-  } catch (error) {
-    return res.status(200).json({ success: false, error: error.message });
-  }
+  } catch (e) {}
+
+  return res.status(200).json({ success: false });
 };
