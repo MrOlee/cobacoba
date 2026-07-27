@@ -6,8 +6,17 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const apiKey = process.env.INDOCAST_API_KEY || "bb47332ceca91e3a2c97128a40c798a69306400072cc4b5a352800697069e45c";
-  const channelId = String(req.query.channelId || req.body?.channelId || "2");
-  const page = String(req.query.page || req.body?.page || "1");
+  const { 
+    type = "list", 
+    channelId = "2", 
+    page = "1", 
+    tabId = "2", 
+    filterItemVer = "v3", 
+    genre = "All", 
+    sort = "ForYou",
+    country = "All",
+    query = ""
+  } = { ...req.query, ...req.body };
 
   const headers = {
     "Content-Type": "application/json",
@@ -16,61 +25,58 @@ module.exports = async (req, res) => {
     "Accept": "application/json, text/plain, */*"
   };
 
-  async function tryRequest(url, method = "GET", body = null) {
+  async function fetchApi(url, options = {}) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 5000);
+    const timer = setTimeout(() => controller.abort(), 4500);
     try {
-      const opts = { method, headers, signal: controller.signal };
-      if (body) opts.body = body;
-      const response = await fetch(url, opts);
+      const response = await fetch(url, { ...options, headers, signal: controller.signal });
       clearTimeout(timer);
       const text = await response.text();
       try {
         const json = JSON.parse(text);
-        if (json && (json.data || json.list || json.items || Array.isArray(json))) {
-          return { ok: true, data: json };
-        }
-        return { ok: false };
+        return { ok: true, data: json };
       } catch (e) {
-        return { ok: false };
+        return { ok: false, raw: text };
       }
-    } catch (e) {
+    } catch (err) {
       clearTimeout(timer);
-      return { ok: false };
+      return { ok: false, error: err.message };
     }
   }
 
-  // 1. Ambil dari POST /list (Katalog Anime Utama)
-  const listUrl = "https://indocast.site/api/dramovnime/list";
-  const listPayloadStr = JSON.stringify({
-    channelId: channelId,
-    page: page,
-    perPage: "18",
-    sort: "ForYou",
-    genre: "All",
-    country: "All"
-  });
+  let targetUrl = "";
+  let fetchOptions = { method: "GET" };
 
-  let res1 = await tryRequest(listUrl, "POST", listPayloadStr);
-  if (res1.ok) return res.status(200).json(res1.data);
+  if (type === "tabsearch") {
+    targetUrl = `https://indocast.site/api/dramovnime/tabsearch?page=${page}&tabId=${tabId}${query ? '&q=' + encodeURIComponent(query) : ''}`;
+  } else if (type === "filteritems") {
+    targetUrl = `https://indocast.site/api/dramovnime/filteritems?tabId=${tabId}&filterItemVer=${filterItemVer}`;
+  } else if (type === "info") {
+    targetUrl = `https://indocast.site/api/dramovnime/info`;
+  } else if (type === "tab") {
+    targetUrl = `https://indocast.site/api/dramovnime/tab`;
+  } else {
+    // Default POST List
+    targetUrl = "https://indocast.site/api/dramovnime/list";
+    fetchOptions = {
+      method: "POST",
+      body: JSON.stringify({
+        channelId: String(channelId),
+        page: String(page),
+        perPage: "24",
+        sort: sort,
+        genre: genre,
+        country: country
+      })
+    };
+  }
 
-  // 2. Format Integer Fallback
-  const listPayloadInt = JSON.stringify({
-    channelId: parseInt(channelId, 10),
-    page: parseInt(page, 10),
-    perPage: 18,
-    sort: "ForYou",
-    genre: "All",
-    country: "All"
-  });
-  let res2 = await tryRequest(listUrl, "POST", listPayloadInt);
-  if (res2.ok) return res.status(200).json(res2.data);
+  const result = await fetchApi(targetUrl, fetchOptions);
 
-  // 3. Fallback GET /tabsearch
-  const tabId = channelId === "1" ? "1" : "2";
-  const tabUrl = `https://indocast.site/api/dramovnime/tabsearch?page=${page}&tabId=${tabId}`;
-  let res3 = await tryRequest(tabUrl, "GET");
-  if (res3.ok) return res.status(200).json(res3.data);
-
-  return res.status(200).json({ success: false, data: [] });
+  if (result.ok) {
+    return res.status(200).json(result.data);
+  } else {
+    // Fallback: jika Vercel Serverless diblokir, kembalikan objek penanda untuk Client Fallback
+    return res.status(200).json({ success: false, fallbackRequired: true, targetUrl, method: fetchOptions.method });
+  }
 };
