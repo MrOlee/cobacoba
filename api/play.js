@@ -16,19 +16,13 @@ module.exports = async (req, res) => {
       headers: {
         "Content-Type": "application/json",
         "x-api-key": apiKey,
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        "Referer": "https://indocast.site/"
+        "User-Agent": "okhttp/4.12.0"
       }
     });
-
     const text = await response.text();
-    try {
-      const data = JSON.parse(text);
-      return res.status(200).json(data);
-    } catch (e) {
-      return res.status(502).json({ error: "Indocast Play merespon non-JSON" });
-    }
+    const data = JSON.parse(text);
+    return res.status(200).json(data);
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(200).json({ success: false, error: error.message });
   }
 };
