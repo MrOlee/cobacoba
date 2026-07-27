@@ -14,17 +14,16 @@ module.exports = async (req, res) => {
     "User-Agent": "okhttp/4.12.0"
   };
 
-  // Coba getplay
   try {
     const getplayUrl = `https://indocast.site/api/dramovnime/getplay?id=${id}&se=${se}&ep=${ep}&lang=in_id&detailPath=${encodeURIComponent(detailPath)}`;
     const response = await fetch(getplayUrl, { method: "GET", headers });
     const text = await response.text();
     const data = JSON.parse(text);
-    const videoUrl = data?.data?.playUrl || data?.playUrl || data?.url || data?.embed;
-    if (videoUrl) return res.status(200).json(data);
+    if (data?.data?.playUrl || data?.playUrl || data?.url) {
+      return res.status(200).json(data);
+    }
   } catch (e) {}
 
-  // Fallback ke endpoint play
   try {
     const playUrl = `https://indocast.site/api/dramovnime/play?se=${se}&ep=${ep}`;
     const response = await fetch(playUrl, { method: "GET", headers });
