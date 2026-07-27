@@ -9,22 +9,20 @@ module.exports = async (req, res) => {
   const channelId = String(req.query.channelId || req.body?.channelId || "2");
   const page = String(req.query.page || req.body?.page || "1");
 
-  // Tab ID: 2 = Anime, 1 = Drama, 0 = All
-  const tabId = channelId === "1" ? "1" : "2";
-
-  // Header Mobile Android OkHttp (Kunci Utama Lolos Cloudflare)
-  const androidHeaders = {
+  const headers = {
     "Content-Type": "application/json",
     "x-api-key": apiKey,
     "User-Agent": "okhttp/4.12.0",
     "Accept": "application/json, text/plain, */*"
   };
 
-  async function tryFetch(url, options = {}) {
+  async function tryRequest(url, method = "GET", body = null) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4500);
+    const timer = setTimeout(() => controller.abort(), 5000);
     try {
-      const response = await fetch(url, { ...options, signal: controller.signal });
+      const opts = { method, headers, signal: controller.signal };
+      if (body) opts.body = body;
+      const response = await fetch(url, opts);
       clearTimeout(timer);
       const text = await response.text();
       try {
@@ -36,38 +34,43 @@ module.exports = async (req, res) => {
       } catch (e) {
         return { ok: false };
       }
-    } catch (err) {
+    } catch (e) {
       clearTimeout(timer);
       return { ok: false };
     }
   }
 
-  // Percobaan 1: Endpoint GET tabsearch dengan Header Android (Sangat Cepat & Stabil)
-  const tabUrl = `https://indocast.site/api/dramovnime/tabsearch?page=${page}&tabId=${tabId}`;
-  let res1 = await tryFetch(tabUrl, { method: "GET", headers: androidHeaders });
-  if (res1.ok) return res.status(200).json(res1.data);
-
-  // Percobaan 2: Endpoint POST list dengan Header Android
+  // 1. Ambil dari POST /list (Katalog Anime Utama)
   const listUrl = "https://indocast.site/api/dramovnime/list";
-  const listPayload = JSON.stringify({
+  const listPayloadStr = JSON.stringify({
     channelId: channelId,
     page: page,
-    perPage: "24",
+    perPage: "18",
     sort: "ForYou",
     genre: "All",
     country: "All"
   });
-  let res2 = await tryFetch(listUrl, { method: "POST", headers: androidHeaders, body: listPayload });
+
+  let res1 = await tryRequest(listUrl, "POST", listPayloadStr);
+  if (res1.ok) return res.status(200).json(res1.data);
+
+  // 2. Format Integer Fallback
+  const listPayloadInt = JSON.stringify({
+    channelId: parseInt(channelId, 10),
+    page: parseInt(page, 10),
+    perPage: 18,
+    sort: "ForYou",
+    genre: "All",
+    country: "All"
+  });
+  let res2 = await tryRequest(listUrl, "POST", listPayloadInt);
   if (res2.ok) return res.status(200).json(res2.data);
 
-  // Percobaan 3: Relay via CORS Proxy
-  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(tabUrl)}`;
-  let res3 = await tryFetch(proxyUrl, { method: "GET", headers: { "x-api-key": apiKey } });
+  // 3. Fallback GET /tabsearch
+  const tabId = channelId === "1" ? "1" : "2";
+  const tabUrl = `https://indocast.site/api/dramovnime/tabsearch?page=${page}&tabId=${tabId}`;
+  let res3 = await tryRequest(tabUrl, "GET");
   if (res3.ok) return res.status(200).json(res3.data);
 
-  return res.status(200).json({
-    success: false,
-    message: "Server Indocast tidak merespon dari Vercel. Mengalihkan ke browser...",
-    data: []
-  });
+  return res.status(200).json({ success: false, data: [] });
 };
