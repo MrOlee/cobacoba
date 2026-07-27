@@ -13,26 +13,21 @@
   a { color: inherit; text-decoration: none; }
   button { cursor: pointer; border: none; font-family: inherit; }
 
-  /* HEADER LOGO OTAKUDESU STYLE */
   header { background-color: #000000; padding: 20px 15px; text-align: center; border-bottom: 2px solid #00a8e8; }
   .logo { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; text-transform: uppercase; }
   .logo .white { color: #ffffff; }
   .logo .blue { color: #00a8e8; }
   .sub-logo { font-size: 12px; color: #00a8e8; margin-top: 4px; font-weight: 600; }
 
-  /* NAV BAR */
   .nav-bar { display: flex; background: #1e1e1e; max-width: 900px; margin: 0 auto; border-bottom: 1px solid #333; }
   .nav-btn { flex: 1; padding: 12px 5px; text-align: center; background: #1e1e1e; color: #bbb; font-weight: 700; font-size: 14px; text-transform: uppercase; border: none; transition: 0.2s; }
   .nav-btn.active, .nav-btn:hover { background: #00a8e8; color: #fff; }
 
-  /* SEARCH BAR */
   .search-wrap { max-width: 900px; margin: 10px auto; padding: 0 10px; }
   .search-input { width: 100%; padding: 11px 14px; background: #ffffff; color: #000; border: none; border-radius: 4px; font-size: 14px; outline: none; font-weight: 500; }
 
-  /* CONTAINER UTAMA */
   .container { max-width: 900px; margin: 0 auto; padding: 10px; }
-  
-  /* GRID KATALOG */
+
   .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
   @media (min-width: 600px) { .grid { grid-template-columns: repeat(4, 1fr); gap: 12px; } }
 
@@ -41,10 +36,9 @@
   .card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: #222; }
   .card-title { padding: 10px; font-size: 13px; font-weight: 700; line-height: 1.3; color: #eee; height: 48px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
-  /* PLAYER VIEW */
   .player-view { display: none; }
   .player-view.active { display: block; }
-  
+
   .btn-back { background: #2a2a2a; color: #fff; padding: 8px 14px; border-radius: 4px; font-size: 13px; font-weight: 700; margin-bottom: 12px; display: inline-block; }
   .btn-back:hover { background: #00a8e8; }
 
@@ -114,9 +108,17 @@
 </div>
 
 <script>
+  const API_KEY = "bb47332ceca91e3a2c97128a40c798a69306400072cc4b5a352800697069e45c";
   let allCatalogData = [];
   let currentAnimeId = "";
   let currentAnimePath = "";
+  let activeProxyIndex = 0;
+
+  const PROXIES = [
+    { name: "Vercel Proxy", type: "internal" },
+    { name: "AllOrigins", type: "external", url: "https://api.allorigins.win/raw?url=" },
+    { name: "CodeTabs", type: "external", url: "https://api.codetabs.com/v1/proxy?quest=" }
+  ];
 
   function extractItems(resData) {
     if (!resData) return null;
@@ -132,36 +134,65 @@
     return null;
   }
 
+  async function fetchListWithFallback(channelId) {
+    // 1. Coba Vercel Proxy internal
+    try {
+      const res = await fetch(`/api/list?channelId=${channelId}&page=1`);
+      if (res.ok) {
+        const json = await res.json();
+        const items = extractItems(json);
+        if (items && items.length > 0) return items;
+      }
+    } catch(e) {}
+
+    // 2. Fallback Client-side ke AllOrigins
+    try {
+      const target = "https://indocast.site/api/dramovnime/list";
+      const pUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
+      const res = await fetch(pUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": API_KEY },
+        body: JSON.stringify({ channelId: String(channelId), page: "1", perPage: "24", sort: "ForYou", genre: "All", country: "All" })
+      });
+      const json = await res.json();
+      const items = extractItems(json);
+      if (items && items.length > 0) return items;
+    } catch(e) {}
+
+    // 3. Fallback Client-side ke CodeTabs
+    try {
+      const target = "https://indocast.site/api/dramovnime/list";
+      const pUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(target)}`;
+      const res = await fetch(pUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": API_KEY },
+        body: JSON.stringify({ channelId: String(channelId), page: "1", perPage: "24", sort: "ForYou", genre: "All", country: "All" })
+      });
+      const json = await res.json();
+      return extractItems(json);
+    } catch(e) {}
+
+    return null;
+  }
+
   async function loadCatalog(channelId = "2") {
     showCatalog();
     const grid = document.getElementById('catalogGrid');
-    grid.innerHTML = '<div class="status-msg">⏳ Memuat data dari server...</div>';
+    grid.innerHTML = '<div class="status-msg">⏳ Memuat data anime dari server Indocast...</div>';
 
-    try {
-      // HANYA panggil server backend Vercel internal
-      const res = await fetch(`/api/list?channelId=${channelId}&page=1`);
-      const result = await res.json();
+    const items = await fetchListWithFallback(channelId);
 
-      const items = extractItems(result);
-
-      if (!items || items.length === 0) {
-        grid.innerHTML = `
-          <div class="status-msg error">
-            ⚠️ ${result.message || 'Gagal terhubung ke API Indocast.'}<br>
-            <button class="btn-retry" onclick="loadCatalog('${channelId}')">🔄 Coba Lagi</button>
-          </div>`;
-        return;
-      }
-
-      allCatalogData = items;
-      renderGrid(items);
-    } catch (err) {
+    if (!items || items.length === 0) {
       grid.innerHTML = `
         <div class="status-msg error">
-          ⚠️ Gagal Terhubung: ${err.message}<br>
-          <button class="btn-retry" onclick="loadCatalog('${channelId}')">🔄 Coba Lagi</button>
+          ⚠️ Server Indocast sedang padat / terhalang Cloudflare.<br>
+          <button class="btn-retry" onclick="loadCatalog('${channelId}')">🔄 Coba Lagi Server</button>
         </div>`;
+      return;
     }
+
+    allCatalogData = items;
+    renderGrid(items);
   }
 
   function renderGrid(items) {
