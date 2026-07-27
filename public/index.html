@@ -3,76 +3,85 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="theme-color" content="#0f172a" />
+<meta name="theme-color" content="#121212" />
 <meta name="referrer" content="no-referrer" />
-<title>Rayliziie Anime — Indocast Real API</title>
+<title>RAYLIZIIEDESU — Anime Subtitle Indonesia</title>
 
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-  body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; padding-bottom: 40px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { background-color: #121212; color: #ffffff; min-height: 100vh; padding-bottom: 40px; }
   a { color: inherit; text-decoration: none; }
   button { cursor: pointer; border: none; font-family: inherit; }
 
-  header { background: #1e293b; padding: 16px; text-align: center; border-bottom: 1px solid #334155; }
-  header h1 { font-size: 20px; color: #38bdf8; font-weight: 800; }
-  header p { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+  /* HEADER LOGO OTAKUDESU STYLE */
+  header { background-color: #000000; padding: 20px 15px; text-align: center; border-bottom: 2px solid #00a8e8; }
+  .logo { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; text-transform: uppercase; }
+  .logo .white { color: #ffffff; }
+  .logo .blue { color: #00a8e8; }
+  .sub-logo { font-size: 12px; color: #00a8e8; margin-top: 4px; font-weight: 600; }
 
-  .nav-tabs { display: flex; max-width: 900px; margin: 10px auto 0; padding: 0 10px; gap: 8px; }
-  .tab-btn { flex: 1; padding: 10px; background: #1e293b; color: #94a3b8; border: 1px solid #334155; border-radius: 6px; font-weight: 700; font-size: 13px; text-align: center; }
-  .tab-btn.active { background: #0284c7; color: #ffffff; border-color: #38bdf8; }
+  /* NAV BAR */
+  .nav-bar { display: flex; background: #1e1e1e; max-width: 900px; margin: 0 auto; border-bottom: 1px solid #333; }
+  .nav-btn { flex: 1; padding: 12px 5px; text-align: center; background: #1e1e1e; color: #bbb; font-weight: 700; font-size: 14px; text-transform: uppercase; border: none; transition: 0.2s; }
+  .nav-btn.active, .nav-btn:hover { background: #00a8e8; color: #fff; }
 
+  /* SEARCH BAR */
   .search-wrap { max-width: 900px; margin: 10px auto; padding: 0 10px; }
-  .search-input { width: 100%; padding: 10px 14px; background: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 14px; outline: none; }
-  .search-input:focus { border-color: #38bdf8; }
+  .search-input { width: 100%; padding: 11px 14px; background: #ffffff; color: #000; border: none; border-radius: 4px; font-size: 14px; outline: none; font-weight: 500; }
 
+  /* CONTAINER UTAMA */
   .container { max-width: 900px; margin: 0 auto; padding: 10px; }
+  
+  /* GRID KATALOG */
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
+  @media (min-width: 600px) { .grid { grid-template-columns: repeat(4, 1fr); gap: 12px; } }
 
-  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; }
-  @media (min-width: 600px) { .grid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+  .card { background: #1c1c1c; border: 1px solid #2d2d2d; border-radius: 6px; overflow: hidden; cursor: pointer; transition: transform 0.2s; position: relative; }
+  .card:hover { transform: translateY(-3px); border-color: #00a8e8; }
+  .card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: #222; }
+  .card-title { padding: 10px; font-size: 13px; font-weight: 700; line-height: 1.3; color: #eee; height: 48px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
-  .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s; position: relative; }
-  .card:hover { transform: translateY(-4px); border-color: #38bdf8; }
-  .card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: #334155; }
-  .card-body { padding: 10px; }
-  .card-title { font-size: 13px; font-weight: 700; color: #f1f5f9; line-height: 1.3; height: 34px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-
+  /* PLAYER VIEW */
   .player-view { display: none; }
   .player-view.active { display: block; }
+  
+  .btn-back { background: #2a2a2a; color: #fff; padding: 8px 14px; border-radius: 4px; font-size: 13px; font-weight: 700; margin-bottom: 12px; display: inline-block; }
+  .btn-back:hover { background: #00a8e8; }
 
-  .btn-back { background: #334155; color: #fff; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 700; margin-bottom: 12px; display: inline-block; }
-  .btn-back:hover { background: #0284c7; }
+  .title-anime { font-size: 18px; font-weight: 800; color: #00a8e8; margin-bottom: 12px; line-height: 1.3; }
 
-  .anime-title { font-size: 18px; font-weight: 800; color: #38bdf8; margin-bottom: 12px; line-height: 1.3; }
-
-  .player-box { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; margin-bottom: 12px; border: 1px solid #334155; }
+  .player-box { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border: 1px solid #333; border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
   .player-box iframe { width: 100%; height: 100%; border: none; }
-  .loader-overlay { position: absolute; inset: 0; background: #0f172a; display: flex; align-items: center; justify-content: center; color: #38bdf8; font-weight: 700; font-size: 14px; }
+  .loading-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; color: #00a8e8; font-weight: 700; font-size: 14px; }
 
-  .ep-select { width: 100%; padding: 10px; background: #1e293b; border: 1px solid #38bdf8; color: #fff; border-radius: 6px; font-size: 13px; outline: none; margin-bottom: 12px; }
+  .ep-select { width: 100%; padding: 10px; background: #1c1c1c; border: 1px solid #00a8e8; color: #fff; border-radius: 4px; font-size: 13px; outline: none; margin-bottom: 12px; }
 
-  .ep-title { font-size: 14px; font-weight: 700; color: #38bdf8; margin: 16px 0 10px; }
-  .ep-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; }
-  .ep-btn { background: #1e293b; border: 1px solid #334155; color: #fff; padding: 8px 4px; font-size: 12px; font-weight: 700; text-align: center; border-radius: 6px; }
-  .ep-btn.active, .ep-btn:hover { background: #0284c7; border-color: #38bdf8; }
+  .ep-grid-title { font-size: 14px; font-weight: 700; margin: 15px 0 10px; color: #00a8e8; }
+  .ep-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px; }
+  .ep-btn { background: #1c1c1c; border: 1px solid #333; color: #fff; padding: 8px 4px; font-size: 12px; font-weight: 700; text-align: center; border-radius: 4px; }
+  .ep-btn.active, .ep-btn:hover { background: #00a8e8; border-color: #00a8e8; }
 
-  .status-box { text-align: center; padding: 40px 20px; color: #94a3b8; grid-column: 1 / -1; font-size: 14px; }
-  .status-box.error { color: #f87171; }
+  .status-msg { text-align: center; padding: 40px 15px; color: #aaa; grid-column: 1 / -1; font-size: 14px; line-height: 1.5; }
+  .status-msg.error { color: #f87171; background: #1a1010; border: 1px solid #4a1d1d; border-radius: 6px; }
+  .btn-retry { margin-top: 12px; background: #00a8e8; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 13px; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>🎬 RAYLIZIIE ANIME</h1>
-  <p>Terhubung langsung ke Indocast API</p>
+  <div class="logo">
+    <span class="white">RAYLIZIIE</span><span class="blue">DESU</span>
+  </div>
+  <div class="sub-logo">Anime Subtitle Indonesia</div>
 </header>
 
-<div class="nav-tabs">
-  <button class="tab-btn active" id="tabAnime" onclick="switchChannel('2')">Anime</button>
-  <button class="tab-btn" id="tabDrama" onclick="switchChannel('1')">Drama</button>
+<div class="nav-bar">
+  <button class="nav-btn active" id="btnTabAnime" onclick="switchChannel('2')">ANIME</button>
+  <button class="nav-btn" id="btnTabDrama" onclick="switchChannel('1')">DRAMA</button>
 </div>
 
 <div class="search-wrap">
-  <input type="text" id="searchInput" class="search-input" placeholder="Cari anime / drama..." />
+  <input type="text" id="searchInput" class="search-input" placeholder="Cari judul anime..." />
 </div>
 
 <div class="container">
@@ -80,17 +89,17 @@
   <!-- KATALOG VIEW -->
   <div id="catalogView">
     <div id="catalogGrid" class="grid">
-      <div class="status-box">⏳ Memuat katalog dari server Indocast API...</div>
+      <div class="status-msg">⏳ Memuat data anime dari server Indocast...</div>
     </div>
   </div>
 
   <!-- PLAYER VIEW -->
   <div id="playerView" class="player-view">
     <button class="btn-back" onclick="showCatalog()">⬅️ Kembali ke Katalog</button>
-    <h1 id="animeTitle" class="anime-title">Judul Anime</h1>
+    <h1 id="animeTitle" class="title-anime">Judul Anime</h1>
 
     <div class="player-box">
-      <div id="playerLoader" class="loader-overlay" style="display:none;">⏳ Memuat Video Stream...</div>
+      <div id="playerLoading" class="loading-text" style="display:none;">⏳ Memuat Video Stream...</div>
       <iframe id="videoIframe" src="about:blank" allowfullscreen></iframe>
     </div>
 
@@ -98,100 +107,76 @@
       <option value="">Pilih Episode...</option>
     </select>
 
-    <div class="ep-title">Daftar Episode:</div>
+    <div class="ep-grid-title">Daftar Episode:</div>
     <div id="epGrid" class="ep-grid"></div>
   </div>
 
 </div>
 
 <script>
-  const API_KEY = "bb47332ceca91e3a2c97128a40c798a69306400072cc4b5a352800697069e45c";
-
   let allCatalogData = [];
   let currentAnimeId = "";
   let currentAnimePath = "";
 
-  // DUAL ENGINE FETCH (Vercel Backend Proxy + Direct CORS Proxy Fallback)
-  async function fetchRealList(channelId = "2") {
-    // 1. Coba lewat Vercel Serverless Function
-    try {
-      const res = await fetch(`/api/list?channelId=${channelId}&page=1`);
-      if (res.ok) {
-        const json = await res.json();
-        if (json && (json.data || json.items || Array.isArray(json))) return json;
-      }
-    } catch (e) {}
-
-    // 2. Fallback Direct jika Vercel IP diblokir Cloudflare Indocast
-    const directUrl = "https://indocast.site/api/dramovnime/list";
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(directUrl)}`;
-    
-    const res = await fetch(proxyUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-api-key": API_KEY },
-      body: JSON.stringify({ channelId: String(channelId), page: "1", perPage: "24", sort: "ForYou", genre: "All", country: "All" })
-    });
-    return await res.json();
+  function extractItems(resData) {
+    if (!resData) return null;
+    if (Array.isArray(resData)) return resData;
+    if (Array.isArray(resData.data)) return resData.data;
+    if (resData.data && typeof resData.data === 'object') {
+      if (Array.isArray(resData.data.list)) return resData.data.list;
+      if (Array.isArray(resData.data.items)) return resData.data.items;
+      if (Array.isArray(resData.data.records)) return resData.data.records;
+    }
+    if (Array.isArray(resData.list)) return resData.list;
+    if (Array.isArray(resData.items)) return resData.items;
+    return null;
   }
 
-  async function fetchRealDetail(path) {
-    try {
-      const res = await fetch(`/api/detail?detailPath=${encodeURIComponent(path)}`);
-      if (res.ok) {
-        const json = await res.json();
-        if (json) return json;
-      }
-    } catch (e) {}
-
-    const directUrl = `https://indocast.site/api/dramovnime/detaildata?se=0&detailPath=${encodeURIComponent(path)}`;
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(directUrl)}`;
-    const res = await fetch(proxyUrl, { headers: { "Content-Type": "application/json", "x-api-key": API_KEY } });
-    return await res.json();
-  }
-
-  async function fetchRealPlay(id, ep, path) {
-    try {
-      const res = await fetch(`/api/play?id=${id}&ep=${ep}&detailPath=${encodeURIComponent(path)}`);
-      if (res.ok) {
-        const json = await res.json();
-        if (json) return json;
-      }
-    } catch (e) {}
-
-    const directUrl = `https://indocast.site/api/dramovnime/getplay?id=${id}&se=1&ep=${ep}&lang=in_id&detailPath=${encodeURIComponent(path)}`;
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(directUrl)}`;
-    const res = await fetch(proxyUrl, { headers: { "Content-Type": "application/json", "x-api-key": API_KEY } });
-    return await res.json();
-  }
-
-  // LOAD KATALOG UTAMA
   async function loadCatalog(channelId = "2") {
     showCatalog();
     const grid = document.getElementById('catalogGrid');
-    grid.innerHTML = '<div class="status-box">⏳ Memuat katalog asli dari API Indocast...</div>';
+    grid.innerHTML = '<div class="status-msg">⏳ Memuat data dari server...</div>';
 
     try {
-      const result = await fetchRealList(channelId);
-      const items = result?.data?.list || result?.data?.items || result?.data || (Array.isArray(result) ? result : []);
-      
+      // HANYA panggil server backend Vercel internal
+      const res = await fetch(`/api/list?channelId=${channelId}&page=1`);
+      const result = await res.json();
+
+      const items = extractItems(result);
+
+      if (!items || items.length === 0) {
+        grid.innerHTML = `
+          <div class="status-msg error">
+            ⚠️ ${result.message || 'Gagal terhubung ke API Indocast.'}<br>
+            <button class="btn-retry" onclick="loadCatalog('${channelId}')">🔄 Coba Lagi</button>
+          </div>`;
+        return;
+      }
+
       allCatalogData = items;
       renderGrid(items);
     } catch (err) {
-      grid.innerHTML = `<div class="status-box error">❌ Gagal terhubung ke API Indocast: ${err.message}</div>`;
+      grid.innerHTML = `
+        <div class="status-msg error">
+          ⚠️ Gagal Terhubung: ${err.message}<br>
+          <button class="btn-retry" onclick="loadCatalog('${channelId}')">🔄 Coba Lagi</button>
+        </div>`;
     }
   }
 
   function renderGrid(items) {
     const grid = document.getElementById('catalogGrid');
     if (!items || items.length === 0) {
-      grid.innerHTML = '<div class="status-box">Katalog tidak ditemukan dari API.</div>';
+      grid.innerHTML = '<div class="status-msg">Data anime tidak ditemukan.</div>';
       return;
     }
 
     grid.innerHTML = '';
     items.forEach(item => {
       const title = item.title || item.name || item.bookName || 'Tanpa Judul';
-      const poster = item.cover || item.coverUrl || item.poster || item.img || 'https://via.placeholder.com/300x400?text=No+Cover';
+      let poster = item.cover || item.coverUrl || item.poster || item.img || 'https://via.placeholder.com/300x400?text=No+Cover';
+      if (poster.startsWith('//')) poster = 'https:' + poster;
+
       const id = item.id || item.bookId || '';
       const path = item.detailPath || item.slug || '';
 
@@ -199,9 +184,7 @@
       card.className = 'card';
       card.innerHTML = `
         <img src="${poster}" alt="${title}" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='https://via.placeholder.com/300x400?text=No+Cover'" />
-        <div class="card-body">
-          <div class="card-title">${title}</div>
-        </div>
+        <div class="card-title">${title}</div>
       `;
       card.onclick = () => openDetail(id, path, title);
       grid.appendChild(card);
@@ -215,17 +198,18 @@
     document.getElementById('catalogView').style.display = 'none';
     document.getElementById('playerView').classList.add('active');
     document.getElementById('animeTitle').innerText = title;
-
+    
     const epSelect = document.getElementById('selectEp');
     const epGrid = document.getElementById('epGrid');
     epSelect.innerHTML = '<option value="">Pilih Episode...</option>';
     epGrid.innerHTML = 'Memuat episode...';
 
     try {
-      const result = await fetchRealDetail(path);
+      const res = await fetch(`/api/detail?detailPath=${encodeURIComponent(path)}`);
+      const result = await res.json();
       const data = result?.data || result;
-      const epList = data?.chapterList || data?.episodes || data?.items || [];
 
+      const epList = data?.chapterList || data?.episodes || data?.items || [];
       epGrid.innerHTML = '';
 
       if (epList.length > 0) {
@@ -253,7 +237,7 @@
   }
 
   async function playEp(epNum) {
-    const loader = document.getElementById('playerLoader');
+    const loader = document.getElementById('playerLoading');
     const iframe = document.getElementById('videoIframe');
     loader.style.display = 'flex';
     iframe.src = 'about:blank';
@@ -266,17 +250,18 @@
     });
 
     try {
-      const result = await fetchRealPlay(currentAnimeId, epNum, currentAnimePath);
+      const res = await fetch(`/api/play?id=${currentAnimeId}&ep=${epNum}&detailPath=${encodeURIComponent(currentAnimePath)}`);
+      const result = await res.json();
       const data = result?.data || result;
       const videoUrl = data.playUrl || data.url || data.embed || data.embedUrl || '';
 
       if (videoUrl) {
         iframe.src = videoUrl;
       } else {
-        alert('Link video tidak tersedia untuk episode ini.');
+        alert('Link video stream tidak ditemukan untuk episode ini.');
       }
     } catch (e) {
-      alert('Gagal memuat video stream.');
+      alert('Gagal memuat player video.');
     } finally {
       setTimeout(() => { loader.style.display = 'none'; }, 500);
     }
@@ -289,8 +274,8 @@
   }
 
   function switchChannel(ch) {
-    document.getElementById('tabAnime').classList.toggle('active', ch === '2');
-    document.getElementById('tabDrama').classList.toggle('active', ch === '1');
+    document.getElementById('btnTabAnime').classList.toggle('active', ch === '2');
+    document.getElementById('btnTabDrama').classList.toggle('active', ch === '1');
     loadCatalog(ch);
   }
 
