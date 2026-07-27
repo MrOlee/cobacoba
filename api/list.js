@@ -1,5 +1,4 @@
 module.exports = async (req, res) => {
-  // Selalu aktifkan Header CORS paling awal
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
@@ -11,92 +10,85 @@ module.exports = async (req, res) => {
   const page = String(req.query.page || (req.body && req.body.page) || "1");
 
   const targetUrl = "https://indocast.site/api/dramovnime/list";
-  const payload = {
+  const payloadStr = JSON.stringify({
     channelId: channelId,
     page: page,
     perPage: "24",
     sort: "ForYou",
     genre: "All",
     country: "All"
+  });
+
+  const headers = {
+    "Host": "indocast.site",
+    "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Content-Type": "application/json",
+    "x-api-key": apiKey,
+    "Origin": "https://indocast.site",
+    "Referer": "https://indocast.site/",
+    "Sec-Ch-Ua": '"Chromium";v="124", "Android WebView";v="124"',
+    "Sec-Ch-Ua-Mobile": "?1",
+    "Sec-Ch-Ua-Platform": '"Android"',
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-origin"
   };
 
-  async function doFetch(url, options) {
+  async function tryFetch(url, customHeaders = headers, method = "POST", body = payloadStr) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 7000);
+    const timer = setTimeout(() => controller.abort(), 6000);
     try {
-      const response = await fetch(url, { ...options, signal: controller.signal });
-      clearTimeout(timeout);
+      const opts = { method, headers: customHeaders, signal: controller.signal };
+      if (method === "POST" && body) opts.body = body;
+      const response = await fetch(url, opts);
+      clearTimeout(timer);
       const text = await response.text();
       try {
         const json = JSON.parse(text);
-        return { ok: response.ok, status: response.status, data: json };
+        if (json && (json.data || json.list || json.items || Array.isArray(json))) {
+          return { success: true, data: json };
+        }
+        return { success: false, raw: text };
       } catch (e) {
-        return { ok: false, status: response.status, raw: text };
+        return { success: false, raw: text };
       }
     } catch (err) {
-      clearTimeout(timeout);
-      return { ok: false, error: err.message };
+      clearTimeout(timer);
+      return { success: false, error: err.message };
     }
   }
 
-  // Attempt 1: Direct Fetch dari Vercel ke Indocast API
-  let result = await doFetch(targetUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    },
-    body: JSON.stringify(payload)
-  });
+  // Jalur 1: Direct Request dengan Header Chrome Android
+  let res1 = await tryFetch(targetUrl);
+  if (res1.success) return res.status(200).json(res1.data);
 
-  if (result.ok && result.data) {
-    return res.status(200).json(result.data);
-  }
-
-  // Attempt 2: Format Integer Payload
-  const numericPayload = {
+  // Jalur 2: Payload Integer Format
+  const payloadIntStr = JSON.stringify({
     channelId: parseInt(channelId, 10),
     page: parseInt(page, 10),
     perPage: 24,
     sort: "ForYou",
     genre: "All",
     country: "All"
-  };
-
-  result = await doFetch(targetUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15"
-    },
-    body: JSON.stringify(numericPayload)
   });
+  let res2 = await tryFetch(targetUrl, headers, "POST", payloadIntStr);
+  if (res2.success) return res.status(200).json(res2.data);
 
-  if (result.ok && result.data) {
-    return res.status(200).json(result.data);
-  }
+  // Jalur 3: Relay Proxy AllOrigins
+  const p3Url = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+  let res3 = await tryFetch(p3Url, { "Content-Type": "application/json", "x-api-key": apiKey });
+  if (res3.success) return res.status(200).json(res3.data);
 
-  // Attempt 3: Server-side Proxy Routing (jika Vercel AWS IP diblokir Cloudflare)
-  const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-  result = await doFetch(proxyUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey
-    },
-    body: JSON.stringify(payload)
-  });
+  // Jalur 4: Relay Proxy CodeTabs
+  const p4Url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
+  let res4 = await tryFetch(p4Url, { "Content-Type": "application/json", "x-api-key": apiKey });
+  if (res4.success) return res.status(200).json(res4.data);
 
-  if (result.ok && result.data) {
-    return res.status(200).json(result.data);
-  }
-
-  // Return JSON yang aman tanpa crash CORS di browser
   return res.status(200).json({
     success: false,
-    message: "Gagal terhubung ke API Indocast (Server Timeout / Cloudflare Block).",
+    message: "Cloudflare memblokir Vercel IP. Mengalihkan ke proxy klien...",
     data: []
   });
 };
