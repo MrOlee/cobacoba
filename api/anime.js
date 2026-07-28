@@ -43,16 +43,38 @@ module.exports = async (req, res) => {
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': API_KEY,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'id-ID,id;q=0.9,en;q=0.8',
+        'Origin': 'https://indocast.site',
+        'Referer': 'https://indocast.site/'
       }
     });
 
-    const data = await response.json();
+    const text = await response.text();
     
-    // DEBUG: Log struktur untuk melihat field apa yang tersedia
-    console.log('API Response Structure:', JSON.stringify(data, null, 2).slice(0, 500));
+    // Coba parse JSON
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      return res.status(200).json({ 
+        success: false, 
+        error: 'Response bukan JSON',
+        raw: text.slice(0, 500)
+      });
+    }
     
-    return res.status(200).json(data);
+    // KIRIM DATA LENGKAP KE FRONTEND
+    return res.status(200).json({
+      success: true,
+      data: data,
+      debug: {
+        hasData: !!data,
+        keys: Object.keys(data || {}),
+        sample: JSON.stringify(data).slice(0, 300)
+      }
+    });
 
   } catch (error) {
     return res.status(200).json({ 
