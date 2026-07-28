@@ -1,5 +1,13 @@
 {
-  "name": "rayliziie-desu-hybrid-api",
-  "version": "3.0.0",
-  "private": true
+  "name": "rayliziie-desu-v4",
+  "version": "4.0.0",
+  "description": "Portal streaming anime dan drama subtitle Indonesia",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel deploy --prod"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
 }
