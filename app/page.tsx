@@ -46,7 +46,6 @@ export default function HomePage() {
     setLoading(false);
   };
 
-  // Fetch Drama
   const fetchDrama = async (action: string, params: Record<string, string> = {}) => {
     setLoading(true);
     try {
@@ -86,7 +85,6 @@ export default function HomePage() {
     }
   };
 
-  // Open Anime Detail
   const openAnimeDetail = async (path: string, title: string) => {
     setCatalogView(false);
     setPlayerData({ title, episodes: [], path, id: '' });
@@ -108,7 +106,6 @@ export default function HomePage() {
     } catch (e) { console.error(e); }
   };
 
-  // Play Anime Episode
   const playAnime = async (epId: string) => {
     const iframe = document.getElementById('playerIframe') as HTMLIFrameElement | null;
     if (!iframe) return;
@@ -124,7 +121,6 @@ export default function HomePage() {
     } catch (e) { console.error(e); }
   };
 
-  // Open Drama Detail
   const openDramaDetail = async (path: string, id: string, title: string) => {
     setCatalogView(false);
     setPlayerData({ title, episodes: [], path, id });
@@ -139,7 +135,6 @@ export default function HomePage() {
         else if (data?.resourceList) eps = data.resourceList;
         else if (Array.isArray(data)) eps = data;
         setPlayerData(prev => ({ ...prev!, episodes: eps }));
-        // Putar episode pertama atau coba langsung
         if (eps.length > 0) {
           playDrama(path, id, 0);
         } else {
@@ -149,7 +144,6 @@ export default function HomePage() {
     } catch (e) { console.error(e); }
   };
 
-  // Play Drama Episode
   const playDrama = async (path: string, id: string, epIndex: number) => {
     const iframe = document.getElementById('playerIframe') as HTMLIFrameElement | null;
     if (!iframe) return;
@@ -165,7 +159,6 @@ export default function HomePage() {
           return;
         }
       }
-      // Fallback: coba ep=1 jika epIndex=0 gagal
       if (epIndex === 0) {
         const res2 = await fetch(`/api/drama?action=getplay&detailPath=${encodeURIComponent(path)}&id=${id}&se=0&ep=1`);
         const json2 = await res2.json();
@@ -177,7 +170,6 @@ export default function HomePage() {
     } catch (e) { console.error(e); }
   };
 
-  // Find Stream URL (rekursif)
   const findStreamUrl = (obj: any): string | null => {
     if (!obj) return null;
     if (typeof obj === 'string') {
@@ -211,7 +203,6 @@ export default function HomePage() {
     return null;
   };
 
-  // Render items
   const renderItems = () => {
     if (loading) return <div className="loading">⏳ Memuat...</div>;
     if (!items || items.length === 0) return <div className="empty">Tidak ada data</div>;
@@ -234,11 +225,11 @@ export default function HomePage() {
   return (
     <div style={{ background: '#0a0e14', color: '#e2e8f0', minHeight: '100vh', fontFamily: 'Arial, sans-serif' }}>
       <header style={{ background: '#141a24', padding: 20, textAlign: 'center', borderBottom: '3px solid #00d4ff' }}>
-        <div className="logo" style={{ fontSize: 28, fontWeight: 900, color: '#fff' }}>RAYLIZIIE<span style={{ color: '#00d4ff' }}>DESU</span></div>
+        <div style={{ fontSize: 28, fontWeight: 900, color: '#fff' }}>RAYLIZIIE<span style={{ color: '#00d4ff' }}>DESU</span></div>
         <div style={{ fontSize: 11, color: '#00d4ff', marginTop: 4, letterSpacing: 2 }}>ANIME & DRAMA SUBTITLE INDONESIA</div>
       </header>
 
-      <div className="nav" style={{ display: 'flex', background: '#141a24', borderBottom: '1px solid #2a2f3a' }}>
+      <div style={{ display: 'flex', background: '#141a24', borderBottom: '1px solid #2a2f3a' }}>
         <button onClick={() => setCategory('anime')} style={{ flex: 1, padding: 12, background: category === 'anime' ? '#00d4ff' : 'transparent', color: category === 'anime' ? '#0a0e14' : '#6b7a8f', border: 'none', fontWeight: 700, cursor: 'pointer' }}>🎌 ANIME</button>
         <button onClick={() => setCategory('drama')} style={{ flex: 1, padding: 12, background: category === 'drama' ? '#00d4ff' : 'transparent', color: category === 'drama' ? '#0a0e14' : '#6b7a8f', border: 'none', fontWeight: 700, cursor: 'pointer' }}>🎬 DRAMA</button>
       </div>
@@ -254,7 +245,6 @@ export default function HomePage() {
               setLoading(true);
               setCatalogView(true);
               let allResults: any[] = [];
-              // Cari di anime
               try {
                 const res = await fetch(`/api/anime?action=home&page=1`);
                 const json = await res.json();
@@ -269,7 +259,6 @@ export default function HomePage() {
                   allResults = allResults.concat(filtered);
                 }
               } catch (e) {}
-              // Cari di drama
               try {
                 const res = await fetch(`/api/drama?action=search&keyword=${encodeURIComponent(q)}&page=1&perPage=20`);
                 const json = await res.json();
@@ -292,9 +281,7 @@ export default function HomePage() {
         />
       </div>
 
-      <div style={{ padding: '10px 20px', background: '#141a24', display: 'flex', gap: 8, overflowX: 'auto' }}>
-        {/* Subnav opsional */}
-      </div>
+      <div style={{ padding: '10px 20px', background: '#141a24', display: 'flex', gap: 8, overflowX: 'auto' }}></div>
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: 20 }}>
         {catalogView ? (
