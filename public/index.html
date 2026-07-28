@@ -1,42 +1,446 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RAYLIZIIEDESU - Portal Streaming</title>
-  <link rel="stylesheet" href="/styles/main.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAYLIZIIEDESU - Streaming</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0e14;color:#e2e8f0;font-family:Arial,sans-serif;min-height:100vh}
+header{background:#141a24;padding:20px;text-align:center;border-bottom:3px solid #00d4ff}
+.logo{font-size:28px;font-weight:900;color:#fff}
+.logo span{color:#00d4ff}
+.sub{font-size:11px;color:#00d4ff;margin-top:4px;letter-spacing:2px}
+.nav{display:flex;background:#141a24;border-bottom:1px solid #2a2f3a}
+.nav button{flex:1;padding:12px;background:transparent;color:#6b7a8f;border:none;font-weight:700;font-size:13px;cursor:pointer}
+.nav button.active{background:#00d4ff;color:#0a0e14}
+.search{padding:12px 20px;background:#141a24}
+.search input{width:100%;max-width:500px;display:block;margin:0 auto;padding:12px 20px;border-radius:25px;border:2px solid #2a2f3a;background:#1a212c;color:#e2e8f0;font-size:14px;outline:none;text-align:center}
+.search input:focus{border-color:#00d4ff}
+.subnav{padding:10px 20px;background:#141a24;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.subnav::-webkit-scrollbar{display:none}
+.subnav button{padding:6px 14px;background:#1a212c;color:#8b9bb5;border:1px solid #2a2f3a;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
+.subnav button.active{background:#00d4ff;color:#0a0e14;border-color:#00d4ff}
+#app{max-width:1200px;margin:0 auto;padding:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.card{background:#141a24;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #1a212c;transition:transform .2s}
+.card:hover{transform:translateY(-4px);border-color:#00d4ff}
+.card .poster{width:100%;aspect-ratio:3/4;background:#1a212c;object-fit:cover}
+.card .title{padding:10px 12px;font-size:12px;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px}
+#player{display:none;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+#backBtn{padding:8px 20px;background:#1a212c;color:#e2e8f0;border:1px solid #2a2f3a;border-radius:6px;font-weight:700;cursor:pointer;margin-bottom:16px}
+#playerTitle{font-size:22px;color:#00d4ff;margin-bottom:16px}
+.video-wrap{width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;margin-bottom:16px}
+.video-wrap iframe{width:100%;height:100%;border:none}
+.ep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(55px,1fr));gap:8px;margin-top:12px}
+.ep-grid button{padding:8px;background:#1a212c;color:#8b9bb5;border:1px solid #2a2f3a;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer}
+.ep-grid button.active,.ep-grid button:hover{background:#00d4ff;color:#0a0e14;border-color:#00d4ff}
+.loading{text-align:center;padding:60px 20px;color:#6b7a8f;grid-column:1/-1}
+.empty{text-align:center;padding:60px 20px;color:#6b7a8f;grid-column:1/-1}
+.empty button{margin-top:12px;padding:8px 20px;background:#00d4ff;color:#0a0e14;border:none;border-radius:6px;font-weight:700;cursor:pointer}
+@media(max-width:480px){.grid{grid-template-columns:repeat(2,1fr);gap:10px}.logo{font-size:22px}}
+</style>
 </head>
 <body>
-  <header>
-    <div class="logo">RAYLIZIIE<span>DESU</span></div>
-    <div class="subtitle">Anime & Drama Subtitle Indonesia</div>
-  </header>
 
-  <nav class="main-nav">
-    <button class="active" data-category="anime">🎌 Anime</button>
-    <button data-category="drama">🎬 Drama</button>
-  </nav>
+<header>
+  <div class="logo">RAYLIZIIE<span>DESU</span></div>
+  <div class="sub">ANIME & DRAMA SUBTITLE INDONESIA</div>
+</header>
 
-  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Cari judul anime atau drama...">
-  </div>
+<div class="nav">
+  <button class="active" onclick="switchCategory('anime')">🎌 ANIME</button>
+  <button onclick="switchCategory('drama')">🎬 DRAMA</button>
+</div>
 
-  <div class="sub-nav" id="subNav"></div>
+<div class="search">
+  <input type="text" id="searchInput" placeholder="🔍 Cari judul...">
+</div>
 
-  <main id="app">
-    <div id="catalog"></div>
-    <div id="player" style="display:none;">
-      <button id="backBtn">← Kembali</button>
-      <h2 id="playerTitle"></h2>
-      <div class="video-wrapper">
-        <iframe id="playerIframe" src="about:blank" allowfullscreen></iframe>
-      </div>
-      <div id="episodeList"></div>
+<div class="subnav" id="subNav"></div>
+
+<div id="app">
+  <div id="catalog" class="grid"></div>
+  <div id="player">
+    <button id="backBtn" onclick="showCatalog()">← KEMBALI</button>
+    <h2 id="playerTitle"></h2>
+    <div class="video-wrap">
+      <iframe id="playerIframe" src="about:blank" allowfullscreen></iframe>
     </div>
-  </main>
+    <div id="episodeList"></div>
+  </div>
+</div>
 
-  <script src="/scripts/api.js"></script>
-  <script src="/scripts/components.js"></script>
-  <script src="/scripts/app.js"></script>
+<script>
+// ==================== KONFIGURASI ====================
+const API_BASE = '/api';
+
+// ==================== API CLIENT ====================
+async function callAPI(endpoint, params = {}) {
+  const qs = new URLSearchParams(params);
+  const url = `${API_BASE}${endpoint}?${qs}`;
+  
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    return data;
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ==================== STATE ====================
+let currentCategory = 'anime';
+let currentData = [];
+let currentMeta = {};
+
+// ==================== NAVIGASI ====================
+function switchCategory(cat) {
+  currentCategory = cat;
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.nav button:${cat === 'anime' ? 'first-child' : 'last-child'}`).classList.add('active');
+  
+  showCatalog();
+  renderSubNav(cat);
+  
+  if (cat === 'anime') loadAnime('home');
+  else loadDrama('home');
+}
+
+function renderSubNav(cat) {
+  const nav = document.getElementById('subNav');
+  if (cat === 'anime') {
+    nav.innerHTML = `
+      <button class="active" onclick="loadAnime('home', this)">🏠 Home</button>
+      <button onclick="loadAnime('list', this)">📜 Daftar</button>
+      <button onclick="loadAnime('schedule', this)">📅 Jadwal</button>
+      <button onclick="loadAnime('genres', this)">🏷️ Genre</button>
+    `;
+  } else {
+    nav.innerHTML = `
+      <button class="active" onclick="loadDrama('home', this)">🏠 Home</button>
+      <button onclick="loadDrama('trending', this)">🔥 Trending</button>
+    `;
+  }
+}
+
+// ==================== LOAD ANIME ====================
+async function loadAnime(action, btn) {
+  if (btn) {
+    document.querySelectorAll('#subNav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  
+  showCatalog();
+  const grid = document.getElementById('catalog');
+  grid.innerHTML = '<div class="loading">⏳ Memuat anime...</div>';
+  
+  let params = { action };
+  if (action === 'home') params.page = '1';
+  if (action === 'genredetail') {
+    params.genre = prompt('Masukkan genre:') || 'romance';
+    params.page = '1';
+  }
+  
+  const data = await callAPI('/anime', params);
+  
+  // Extract items
+  let items = [];
+  if (data && data.data) {
+    if (Array.isArray(data.data)) items = data.data;
+    else if (data.data.list) items = data.data.list;
+    else if (data.data.items) items = data.data.items;
+  } else if (data && data.list) {
+    items = data.list;
+  } else if (Array.isArray(data)) {
+    items = data;
+  }
+  
+  if (action === 'genres') {
+    const genreList = items.map(g => g.name || g.title || g);
+    grid.innerHTML = `
+      <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;padding:10px 0">
+        ${genreList.map(g => `<button onclick="loadAnimeGenre('${g}')" style="padding:8px 16px;background:#1a212c;color:#e2e8f0;border:1px solid #2a2f3a;border-radius:20px;cursor:pointer">${g}</button>`).join('')}
+      </div>
+    `;
+    return;
+  }
+  
+  renderCatalog(items);
+}
+
+async function loadAnimeGenre(genre) {
+  showCatalog();
+  const grid = document.getElementById('catalog');
+  grid.innerHTML = '<div class="loading">⏳ Memuat genre...</div>';
+  
+  const data = await callAPI('/anime', { action: 'genredetail', genre, page: '1' });
+  let items = [];
+  if (data && data.data && Array.isArray(data.data)) items = data.data;
+  else if (data && data.list) items = data.list;
+  
+  renderCatalog(items);
+}
+
+// ==================== LOAD DRAMA ====================
+async function loadDrama(action, btn) {
+  if (btn) {
+    document.querySelectorAll('#subNav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  
+  showCatalog();
+  const grid = document.getElementById('catalog');
+  grid.innerHTML = '<div class="loading">⏳ Memuat drama...</div>';
+  
+  let params = { action };
+  if (action === 'trending') {
+    params.page = '0';
+    params.perPage = '18';
+  }
+  
+  const data = await callAPI('/drama', params);
+  
+  let items = [];
+  if (data && data.data && Array.isArray(data.data)) items = data.data;
+  else if (data && data.list) items = data.list;
+  else if (data && data.items) items = data.items;
+  
+  renderCatalog(items);
+}
+
+// ==================== RENDER CATALOG ====================
+function renderCatalog(items) {
+  const grid = document.getElementById('catalog');
+  
+  if (!items || items.length === 0) {
+    grid.innerHTML = '<div class="empty">Tidak ada data<br><button onclick="location.reload()">🔄 Refresh</button></div>';
+    return;
+  }
+  
+  currentData = items;
+  
+  grid.innerHTML = items.map((item, index) => {
+    const title = item.title || item.name || item.caption || item.subjectName || 'No Title';
+    let poster = item.cover || item.poster || item.coverUrl || item.image || '';
+    if (poster && poster.startsWith('//')) poster = 'https:' + poster;
+    if (!poster) poster = 'https://via.placeholder.com/300x400/141a24/00d4ff?text=No+Cover';
+    
+    const path = item.path || item.slug || item.detailPath || item.detail_path || item.id || index;
+    const id = item.id || item.subjectId || item.subject_id || '';
+    
+    return `
+      <div class="card" data-path="${path}" data-id="${id}" data-index="${index}">
+        <img class="poster" src="${poster}" alt="${title}" loading="lazy" 
+             onerror="this.src='https://via.placeholder.com/300x400/141a24/00d4ff?text=No+Cover'">
+        <div class="title">${title}</div>
+      </div>
+    `;
+  }).join('');
+  
+  // Click handler
+  grid.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', () => {
+      const path = card.dataset.path;
+      const id = card.dataset.id;
+      const index = parseInt(card.dataset.index);
+      const item = currentData[index];
+      const title = item.title || item.name || 'No Title';
+      
+      if (currentCategory === 'anime') {
+        openAnimeDetail(path, title);
+      } else {
+        openDramaDetail(path, id, title);
+      }
+    });
+  });
+}
+
+// ==================== ANIME DETAIL ====================
+async function openAnimeDetail(path, title) {
+  showPlayer();
+  document.getElementById('playerTitle').textContent = title;
+  const epList = document.getElementById('episodeList');
+  epList.innerHTML = '<div class="loading">⏳ Memuat episode...</div>';
+  
+  const data = await callAPI('/anime', { action: 'detail', path });
+  
+  let episodes = [];
+  if (data && data.data) {
+    episodes = data.data.episode_list || data.data.episodes || [];
+  }
+  
+  if (episodes.length === 0) {
+    epList.innerHTML = '<div class="empty">Tidak ada episode</div>';
+    return;
+  }
+  
+  epList.innerHTML = `
+    <h3 style="margin:12px 0 8px;color:#00d4ff">DAFTAR EPISODE</h3>
+    <div class="ep-grid">
+      ${episodes.map((ep, i) => {
+        const epId = ep.episode_id || ep.id || ep.path || i;
+        return `<button data-id="${epId}" onclick="playAnime('${epId}')">${i+1}</button>`;
+      }).join('')}
+    </div>
+  `;
+  
+  // Play first episode
+  const firstId = episodes[0].episode_id || episodes[0].id || episodes[0].path || '0';
+  playAnime(firstId);
+}
+
+async function playAnime(epId) {
+  const iframe = document.getElementById('playerIframe');
+  iframe.src = 'about:blank';
+  
+  const data = await callAPI('/anime', { action: 'play', episode_id: epId });
+  
+  let streamUrl = findStream(data);
+  if (streamUrl) {
+    iframe.src = streamUrl;
+  } else {
+    alert('Link stream tidak ditemukan');
+  }
+}
+
+// ==================== DRAMA DETAIL ====================
+async function openDramaDetail(path, id, title) {
+  showPlayer();
+  document.getElementById('playerTitle').textContent = title;
+  const epList = document.getElementById('episodeList');
+  epList.innerHTML = '<div class="loading">⏳ Memuat episode...</div>';
+  
+  const data = await callAPI('/drama', { action: 'details', detailPath: path, id });
+  
+  let episodes = [];
+  if (data && data.data) {
+    episodes = data.data.episodes || data.data.chapterList || data.data.resourceList || [];
+  }
+  
+  if (episodes.length === 0) {
+    epList.innerHTML = '<div class="empty">Episode tidak tersedia</div>';
+    playDrama(path, id, 0);
+    return;
+  }
+  
+  epList.innerHTML = `
+    <h3 style="margin:12px 0 8px;color:#00d4ff">DAFTAR EPISODE</h3>
+    <div class="ep-grid">
+      ${episodes.map((ep, i) => `
+        <button onclick="playDrama('${path}','${id}',${i})">${i+1}</button>
+      `).join('')}
+    </div>
+  `;
+  
+  playDrama(path, id, 0);
+}
+
+async function playDrama(path, id, epIndex) {
+  const iframe = document.getElementById('playerIframe');
+  iframe.src = 'about:blank';
+  
+  const data = await callAPI('/drama', { 
+    action: 'getplay', 
+    detailPath: path, 
+    id, 
+    se: '0', 
+    ep: String(epIndex) 
+  });
+  
+  let streamUrl = findStream(data);
+  if (streamUrl) {
+    iframe.src = streamUrl;
+  } else {
+    alert('Link stream tidak ditemukan untuk episode ini');
+  }
+}
+
+// ==================== STREAM FINDER ====================
+function findStream(obj) {
+  if (!obj) return null;
+  if (typeof obj === 'string') {
+    if (obj.startsWith('http') || obj.startsWith('//')) {
+      if (obj.includes('.m3u8') || obj.includes('.mp4') || obj.includes('stream') || obj.includes('play')) {
+        return obj.startsWith('//') ? 'https:' + obj : obj;
+      }
+    }
+    return null;
+  }
+  if (typeof obj === 'object') {
+    const priority = ['playUrl', 'url', 'mediaUrl', 'play_url', 'videoUrl', 'stream', 'hls', 'm3u8', 'link', 'embed'];
+    for (const key of priority) {
+      if (obj[key] && typeof obj[key] === 'string') {
+        const val = obj[key];
+        if (val.startsWith('http') || val.startsWith('//')) {
+          return val.startsWith('//') ? 'https:' + val : val;
+        }
+      }
+    }
+    for (const key of Object.keys(obj)) {
+      const result = findStream(obj[key]);
+      if (result) return result;
+    }
+  }
+  return null;
+}
+
+// ==================== SEARCH ====================
+document.getElementById('searchInput').addEventListener('keypress', async (e) => {
+  if (e.key !== 'Enter') return;
+  const query = e.target.value.trim();
+  if (query.length < 2) return;
+  
+  showCatalog();
+  const grid = document.getElementById('catalog');
+  grid.innerHTML = '<div class="loading">🔍 Mencari...</div>';
+  
+  // Search di anime
+  const animeData = await callAPI('/anime', { action: 'home', page: '1' });
+  let animeItems = [];
+  if (animeData && animeData.data && Array.isArray(animeData.data)) {
+    animeItems = animeData.data.filter(item => {
+      const title = (item.title || item.name || '').toLowerCase();
+      return title.includes(query.toLowerCase());
+    });
+  }
+  
+  // Search di drama
+  const dramaData = await callAPI('/drama', { 
+    action: 'search', 
+    keyword: query, 
+    page: '1', 
+    perPage: '20' 
+  });
+  let dramaItems = [];
+  if (dramaData && dramaData.data && Array.isArray(dramaData.data)) {
+    dramaItems = dramaData.data;
+  }
+  
+  const allItems = [...animeItems, ...dramaItems];
+  if (allItems.length === 0) {
+    grid.innerHTML = `<div class="empty">Tidak ditemukan hasil untuk "${query}"</div>`;
+    return;
+  }
+  
+  renderCatalog(allItems);
+});
+
+// ==================== UI HELPERS ====================
+function showCatalog() {
+  document.getElementById('catalog').style.display = 'grid';
+  document.getElementById('player').style.display = 'none';
+  document.getElementById('playerIframe').src = 'about:blank';
+}
+
+function showPlayer() {
+  document.getElementById('catalog').style.display = 'none';
+  document.getElementById('player').style.display = 'block';
+}
+
+// ==================== START ====================
+switchCategory('anime');
+</script>
 </body>
 </html>
