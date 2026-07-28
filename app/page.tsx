@@ -159,6 +159,7 @@ export default function HomePage() {
           return;
         }
       }
+      // Fallback: coba ep=1 jika epIndex=0 gagal
       if (epIndex === 0) {
         const res2 = await fetch(`/api/drama?action=getplay&detailPath=${encodeURIComponent(path)}&id=${id}&se=0&ep=1`);
         const json2 = await res2.json();
