@@ -24,7 +24,8 @@ module.exports = async (req, res) => {
     headers: {
       "Content-Type": "application/json",
       "x-api-key": apiKey,
-      "User-Agent": "okhttp/4.12.0"
+      "User-Agent": "okhttp/4.12.0",
+      "Accept": "application/json, text/plain, */*"
     }
   };
 
@@ -47,8 +48,13 @@ module.exports = async (req, res) => {
     targetUrl = `https://indocast.site/api/filmbox/getplay?subjectId=${subjectId || id}&detailPath=${encodeURIComponent(detailPath)}&se=${se}&ep=${ep}&lang=in_id`;
   }
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 4500);
+
   try {
+    options.signal = controller.signal;
     const response = await fetch(targetUrl, options);
+    clearTimeout(timer);
     const text = await response.text();
     try {
       const data = JSON.parse(text);
@@ -57,6 +63,7 @@ module.exports = async (req, res) => {
       return res.status(200).json({ success: false, raw: text });
     }
   } catch (err) {
+    clearTimeout(timer);
     return res.status(200).json({ success: false, error: err.message });
   }
 };
