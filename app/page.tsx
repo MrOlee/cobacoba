@@ -5,89 +5,144 @@ import { useState, useEffect } from 'react';
 export default function HomePage() {
   const [category, setCategory] = useState<'anime' | 'drama'>('anime');
   const [items, setItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [catalogView, setCatalogView] = useState(true);
   const [playerData, setPlayerData] = useState<{ title: string; episodes: any[]; path: string; id: string } | null>(null);
 
-  const extractTitle = (item: any) => item?.title || item?.name || item?.caption || 'No Title';
+  // ==================== EKSTRAKTOR ====================
+  const extractTitle = (item: any) => {
+    if (!item) return 'No Title';
+    return item.title || item.name || item.caption || item.subjectName || 'No Title';
+  };
+
   const extractPoster = (item: any) => {
+    if (!item) return '';
     const candidates = ['cover_url', 'cover', 'poster', 'coverUrl', 'image', 'img', 'thumb'];
     for (const key of candidates) {
-      const val = item?.[key];
-      if (typeof val === 'string') {
-        if (val.startsWith('//')) return 'https:' + val;
-        return val;
+      const val = item[key];
+      if (typeof val === 'string' && val.trim()) {
+        let url = val.trim();
+        if (url.startsWith('//')) return 'https:' + url;
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        if (url.startsWith('/')) return 'https://indocast.site' + url;
+        return url;
       }
     }
     return '';
   };
-  const extractPath = (item: any) => item?.path || item?.slug || item?.detailPath || '';
-  const extractId = (item: any) => item?.id || item?.subjectId || item?.subject_id || '';
 
+  const extractPath = (item: any) => {
+    if (!item) return '';
+    return item.path || item.slug || item.detailPath || item.detail_path || '';
+  };
+
+  const extractId = (item: any) => {
+    if (!item) return '';
+    return item.id || item.subjectId || item.subject_id || '';
+  };
+
+  // ==================== FETCH FUNCTIONS ====================
   const fetchAnime = async (action: string, params: Record<string, string> = {}) => {
     setLoading(true);
+    setError(null);
     try {
       const qs = new URLSearchParams({ action, ...params });
       const res = await fetch(`/api/anime?${qs}`);
       const json = await res.json();
-      if (json.success) {
-        let data = json.data;
-        let rawItems: any[] = [];
-        if (Array.isArray(data)) rawItems = data;
-        else if (data?.data) rawItems = Array.isArray(data.data) ? data.data : [];
-        else if (data?.list) rawItems = data.list;
-        else if (data?.items) rawItems = data.items;
-        else rawItems = [];
-        setItems(rawItems);
+      console.log('[ANIME RESPONSE]', json);
+
+      if (!json.success) {
+        throw new Error(json.error || 'Gagal fetch anime');
       }
-    } catch (e) { console.error(e); }
+
+      let rawItems: any[] = [];
+      const data = json.data;
+      if (Array.isArray(data)) rawItems = data;
+      else if (data?.data) rawItems = Array.isArray(data.data) ? data.data : [];
+      else if (data?.list) rawItems = data.list || [];
+      else if (data?.items) rawItems = data.items || [];
+      else rawItems = [];
+
+      setItems(rawItems);
+    } catch (err: any) {
+      console.error('[ANIME ERROR]', err);
+      setError(err.message || 'Terjadi kesalahan');
+      setItems([]);
+    }
     setLoading(false);
   };
 
   const fetchDrama = async (action: string, params: Record<string, string> = {}) => {
     setLoading(true);
+    setError(null);
     try {
       const qs = new URLSearchParams({ action, ...params });
       const res = await fetch(`/api/drama?${qs}`);
       const json = await res.json();
-      if (json.success) {
-        let data = json.data;
-        let rawItems: any[] = [];
-        if (Array.isArray(data)) rawItems = data;
-        else if (data?.data) rawItems = Array.isArray(data.data) ? data.data : [];
-        else if (data?.list) rawItems = data.list;
-        else if (data?.items) rawItems = data.items;
-        else rawItems = [];
-        setItems(rawItems);
+      console.log('[DRAMA RESPONSE]', json);
+
+      if (!json.success) {
+        throw new Error(json.error || 'Gagal fetch drama');
       }
-    } catch (e) { console.error(e); }
+
+      let rawItems: any[] = [];
+      const data = json.data;
+      if (Array.isArray(data)) rawItems = data;
+      else if (data?.data) rawItems = Array.isArray(data.data) ? data.data : [];
+      else if (data?.list) rawItems = data.list || [];
+      else if (data?.items) rawItems = data.items || [];
+      else rawItems = [];
+
+      setItems(rawItems);
+    } catch (err: any) {
+      console.error('[DRAMA ERROR]', err);
+      setError(err.message || 'Terjadi kesalahan');
+      setItems([]);
+    }
     setLoading(false);
   };
 
+  // ==================== EFFECT ====================
   useEffect(() => {
-    if (category === 'anime') fetchAnime('home', { page: '1' });
-    else fetchDrama('home');
+    if (category === 'anime') {
+      fetchAnime('home', { page: '1' });
+    } else {
+      fetchDrama('home');
+    }
   }, [category]);
 
+  // ==================== NAVIGASI ====================
+  const switchCategory = (cat: 'anime' | 'drama') => {
+    setCategory(cat);
+    setCatalogView(true);
+    setPlayerData(null);
+  };
+
+  // ==================== CARD CLICK ====================
   const handleCardClick = (item: any) => {
     const title = extractTitle(item);
     const path = extractPath(item);
     const id = extractId(item);
+
     if (category === 'anime') {
       if (path) openAnimeDetail(path, title);
-      else alert('Path tidak ditemukan');
+      else alert('Path tidak ditemukan untuk anime ini');
     } else {
       if (path && id) openDramaDetail(path, id, title);
-      else alert('Data tidak lengkap');
+      else if (path) openDramaDetail(path, path, title); // fallback id = path
+      else alert('Data tidak lengkap untuk drama ini');
     }
   };
 
+  // ==================== ANIME DETAIL ====================
   const openAnimeDetail = async (path: string, title: string) => {
     setCatalogView(false);
     setPlayerData({ title, episodes: [], path, id: '' });
     try {
       const res = await fetch(`/api/anime?action=detail&path=${encodeURIComponent(path)}`);
       const json = await res.json();
+      console.log('[ANIME DETAIL]', json);
       if (json.success) {
         const data = json.data;
         let eps: any[] = [];
@@ -110,19 +165,23 @@ export default function HomePage() {
     try {
       const res = await fetch(`/api/anime?action=play&episode_id=${encodeURIComponent(epId)}`);
       const json = await res.json();
+      console.log('[ANIME PLAY]', json);
       if (json.success) {
         const stream = findStreamUrl(json.data);
         if (stream) iframe.src = stream;
+        else alert('Link stream tidak ditemukan');
       }
     } catch (e) { console.error(e); }
   };
 
+  // ==================== DRAMA DETAIL ====================
   const openDramaDetail = async (path: string, id: string, title: string) => {
     setCatalogView(false);
     setPlayerData({ title, episodes: [], path, id });
     try {
       const res = await fetch(`/api/drama?action=details&detailPath=${encodeURIComponent(path)}&id=${id}`);
       const json = await res.json();
+      console.log('[DRAMA DETAIL]', json);
       if (json.success) {
         const data = json.data;
         let eps: any[] = [];
@@ -134,7 +193,7 @@ export default function HomePage() {
         if (eps.length > 0) {
           playDrama(path, id, 0);
         } else {
-          playDrama(path, id, 0);
+          playDrama(path, id, 0); // coba langsung
         }
       }
     } catch (e) { console.error(e); }
@@ -147,6 +206,7 @@ export default function HomePage() {
     try {
       const res = await fetch(`/api/drama?action=getplay&detailPath=${encodeURIComponent(path)}&id=${id}&se=0&ep=${epIndex}`);
       const json = await res.json();
+      console.log('[DRAMA PLAY]', json);
       if (json.success) {
         const stream = findStreamUrl(json.data);
         if (stream) {
@@ -154,6 +214,7 @@ export default function HomePage() {
           return;
         }
       }
+      // fallback ep=1
       if (epIndex === 0) {
         const res2 = await fetch(`/api/drama?action=getplay&detailPath=${encodeURIComponent(path)}&id=${id}&se=0&ep=1`);
         const json2 = await res2.json();
@@ -162,9 +223,13 @@ export default function HomePage() {
           if (stream2) iframe.src = stream2;
         }
       }
+      if (!iframe.src || iframe.src === 'about:blank') {
+        alert('Link stream tidak ditemukan');
+      }
     } catch (e) { console.error(e); }
   };
 
+  // ==================== STREAM FINDER ====================
   const findStreamUrl = (obj: any): string | null => {
     if (!obj) return null;
     if (typeof obj === 'string') {
@@ -198,9 +263,18 @@ export default function HomePage() {
     return null;
   };
 
+  // ==================== RENDER ====================
   const renderItems = () => {
-    if (loading) return <div className="loading">⏳ Memuat...</div>;
-    if (!items || items.length === 0) return <div className="empty">Tidak ada data</div>;
+    if (loading) {
+      return <div className="status">⏳ Memuat...</div>;
+    }
+    if (error) {
+      return <div className="status error">❌ {error}<br /><button onClick={() => category === 'anime' ? fetchAnime('home', { page: '1' }) : fetchDrama('home')} style={{ marginTop: 12, padding: '8px 20px', background: '#00d4ff', color: '#0a0e14', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 700 }}>Coba Lagi</button></div>;
+    }
+    if (!items || items.length === 0) {
+      return <div className="status">Tidak ada data ditemukan</div>;
+    }
+
     return items.map((item, idx) => {
       const title = extractTitle(item);
       const poster = extractPoster(item);
@@ -217,6 +291,7 @@ export default function HomePage() {
     });
   };
 
+  // ==================== UI ====================
   return (
     <div style={{ background: '#0a0e14', color: '#e2e8f0', minHeight: '100vh', fontFamily: 'Arial, sans-serif' }}>
       <header style={{ background: '#141a24', padding: 20, textAlign: 'center', borderBottom: '3px solid #00d4ff' }}>
@@ -225,8 +300,8 @@ export default function HomePage() {
       </header>
 
       <div style={{ display: 'flex', background: '#141a24', borderBottom: '1px solid #2a2f3a' }}>
-        <button onClick={() => setCategory('anime')} style={{ flex: 1, padding: 12, background: category === 'anime' ? '#00d4ff' : 'transparent', color: category === 'anime' ? '#0a0e14' : '#6b7a8f', border: 'none', fontWeight: 700, cursor: 'pointer' }}>🎌 ANIME</button>
-        <button onClick={() => setCategory('drama')} style={{ flex: 1, padding: 12, background: category === 'drama' ? '#00d4ff' : 'transparent', color: category === 'drama' ? '#0a0e14' : '#6b7a8f', border: 'none', fontWeight: 700, cursor: 'pointer' }}>🎬 DRAMA</button>
+        <button onClick={() => switchCategory('anime')} style={{ flex: 1, padding: 12, background: category === 'anime' ? '#00d4ff' : 'transparent', color: category === 'anime' ? '#0a0e14' : '#6b7a8f', border: 'none', fontWeight: 700, cursor: 'pointer' }}>🎌 ANIME</button>
+        <button onClick={() => switchCategory('drama')} style={{ flex: 1, padding: 12, background: category === 'drama' ? '#00d4ff' : 'transparent', color: category === 'drama' ? '#0a0e14' : '#6b7a8f', border: 'none', fontWeight: 700, cursor: 'pointer' }}>🎬 DRAMA</button>
       </div>
 
       <div style={{ padding: '12px 20px', background: '#141a24' }}>
@@ -238,38 +313,41 @@ export default function HomePage() {
               const q = (e.target as HTMLInputElement).value.trim();
               if (q.length < 2) return alert('Minimal 2 karakter');
               setLoading(true);
+              setError(null);
               setCatalogView(true);
               let allResults: any[] = [];
+              // Search di anime (filter lokal)
               try {
                 const res = await fetch(`/api/anime?action=home&page=1`);
                 const json = await res.json();
                 if (json.success) {
                   let data = json.data;
-                  let rawItems: any[] = [];
-                  if (Array.isArray(data)) rawItems = data;
-                  else if (data?.data) rawItems = Array.isArray(data.data) ? data.data : [];
-                  else if (data?.list) rawItems = data.list;
-                  else if (data?.items) rawItems = data.items;
-                  const filtered = rawItems.filter(item => extractTitle(item).toLowerCase().includes(q.toLowerCase()));
+                  let raw: any[] = [];
+                  if (Array.isArray(data)) raw = data;
+                  else if (data?.data) raw = Array.isArray(data.data) ? data.data : [];
+                  else if (data?.list) raw = data.list || [];
+                  else if (data?.items) raw = data.items || [];
+                  const filtered = raw.filter(item => extractTitle(item).toLowerCase().includes(q.toLowerCase()));
                   allResults = allResults.concat(filtered);
                 }
               } catch (e) {}
+              // Search di drama (pakai endpoint)
               try {
                 const res = await fetch(`/api/drama?action=search&keyword=${encodeURIComponent(q)}&page=1&perPage=20`);
                 const json = await res.json();
                 if (json.success) {
                   let data = json.data;
-                  let rawItems: any[] = [];
-                  if (Array.isArray(data)) rawItems = data;
-                  else if (data?.data) rawItems = Array.isArray(data.data) ? data.data : [];
-                  else if (data?.list) rawItems = data.list;
-                  else if (data?.items) rawItems = data.items;
-                  allResults = allResults.concat(rawItems);
+                  let raw: any[] = [];
+                  if (Array.isArray(data)) raw = data;
+                  else if (data?.data) raw = Array.isArray(data.data) ? data.data : [];
+                  else if (data?.list) raw = data.list || [];
+                  else if (data?.items) raw = data.items || [];
+                  allResults = allResults.concat(raw);
                 }
               } catch (e) {}
               setItems(allResults);
               setLoading(false);
-              if (allResults.length === 0) alert('Tidak ditemukan');
+              if (allResults.length === 0) alert('Tidak ditemukan hasil untuk "' + q + '"');
             }
           }}
           style={{ width: '100%', maxWidth: 500, display: 'block', margin: '0 auto', padding: '12px 20px', borderRadius: 25, border: '2px solid #2a2f3a', background: '#1a212c', color: '#e2e8f0', fontSize: 14, outline: 'none', textAlign: 'center' }}
@@ -284,7 +362,7 @@ export default function HomePage() {
             {renderItems()}
           </div>
         ) : (
-          <div id="player" style={{ display: 'block' }}>
+          <div id="player">
             <button onClick={() => { setCatalogView(true); setPlayerData(null); }} style={{ padding: '8px 20px', background: '#1a212c', color: '#e2e8f0', border: '1px solid #2a2f3a', borderRadius: 6, fontWeight: 700, cursor: 'pointer', marginBottom: 16 }}>← KEMBALI</button>
             <h2 style={{ fontSize: 24, color: '#00d4ff', marginBottom: 16 }}>{playerData?.title || 'Loading...'}</h2>
             <div style={{ width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: 10, overflow: 'hidden', marginBottom: 16 }}>
@@ -318,8 +396,9 @@ export default function HomePage() {
         .card:hover { transform: translateY(-4px); border-color: #00d4ff; }
         .card .poster { width: 100%; aspect-ratio: 3/4; background: #1a212c; object-fit: cover; display: block; }
         .card .title { padding: 10px 12px; font-size: 13px; font-weight: 700; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 38px; }
-        .loading { text-align: center; padding: 60px 20px; color: #6b7a8f; grid-column: 1 / -1; }
-        .empty { text-align: center; padding: 60px 20px; color: #6b7a8f; grid-column: 1 / -1; }
+        .status { text-align: center; padding: 60px 20px; color: #6b7a8f; grid-column: 1 / -1; }
+        .status.error { color: #ff6b6b; }
+        .status button { background: #00d4ff; color: #0a0e14; border: none; padding: 8px 20px; border-radius: 6px; font-weight: 700; cursor: pointer; }
       `}</style>
     </div>
   );
