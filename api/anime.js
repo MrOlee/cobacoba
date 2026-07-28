@@ -1,5 +1,4 @@
 module.exports = async (req, res) => {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
@@ -9,8 +8,6 @@ module.exports = async (req, res) => {
   }
 
   const { action = 'home', page = '1', genre = '', path = '', episode_id = '' } = req.query;
-  
-  // API KEY - PASTIKAN VALID
   const API_KEY = 'bb47332ceca91e3a2c97128a40c798a69306400072cc4b5a352800697069e45c';
   
   let url = '';
@@ -50,19 +47,12 @@ module.exports = async (req, res) => {
       }
     });
 
-    const text = await response.text();
+    const data = await response.json();
     
-    // Coba parse JSON
-    try {
-      const data = JSON.parse(text);
-      return res.status(200).json(data);
-    } catch (e) {
-      return res.status(200).json({ 
-        success: false, 
-        raw: text,
-        note: 'Response bukan JSON valid'
-      });
-    }
+    // DEBUG: Log struktur untuk melihat field apa yang tersedia
+    console.log('API Response Structure:', JSON.stringify(data, null, 2).slice(0, 500));
+    
+    return res.status(200).json(data);
 
   } catch (error) {
     return res.status(200).json({ 
