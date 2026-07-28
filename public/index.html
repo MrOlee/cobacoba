@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="theme-color" content="#0e1117" />
 <meta name="referrer" content="no-referrer" />
-<title>RAYLIZIIEDESU — Anime & Drama Subtitle Indonesia</title>
+<title>RAYLIZIIEDESU — Portal Anime & Drama Subtitle Indonesia</title>
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -72,6 +72,7 @@
   .ep-btn.active, .ep-btn:hover { background: #00a8e8; border-color: #00a8e8; }
 
   .status-msg { text-align: center; padding: 50px 20px; color: #8b949e; grid-column: 1 / -1; font-size: 14px; }
+  .btn-retry { margin-top: 12px; background: #00a8e8; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 700; }
 </style>
 </head>
 <body>
@@ -82,8 +83,8 @@
 </header>
 
 <div class="main-tabs">
-  <button class="main-tab-btn active" id="btnMainAnime" onclick="switchCategory('anime')">ANIME (AnimeKompi)</button>
-  <button class="main-tab-btn" id="btnMainDrama" onclick="switchCategory('drama')">DRAMA (Filmbox)</button>
+  <button class="main-tab-btn active" id="btnMainAnime" onclick="switchCategory('anime')">ANIME (ANIMEKOMPI)</button>
+  <button class="main-tab-btn" id="btnMainDrama" onclick="switchCategory('drama')">DRAMA (FILMBOX)</button>
 </div>
 
 <div class="sub-nav-container">
@@ -135,23 +136,45 @@
 </div>
 
 <script>
+  const API_KEY = "bb47332ceca91e3a2c97128a40c798a69306400072cc4b5a352800697069e45c";
   let currentCategory = "anime"; // "anime" | "drama"
   let currentAnimePath = "";
   let currentDramaId = "";
   let currentDramaPath = "";
 
+  // EKSTRAKSI ITEM TINGKAT DALAM (MEMBONGKAR STRUKTUR FILMBOX & ANIMEKOMPI)
   function extractItems(json) {
     if (!json) return [];
-    let d = json.data || json;
-    if (Array.isArray(d)) return d;
-    if (typeof d === 'object') {
-      return d.list || d.items || d.records || d.results || [];
+    let root = json.data || json;
+    let listArr = [];
+
+    if (Array.isArray(root)) listArr = root;
+    else if (typeof root === 'object') {
+      listArr = root.list || root.items || root.records || root.results || root.subjectList || root.subject_list || [];
     }
-    return [];
+
+    let finalItems = [];
+
+    listArr.forEach(item => {
+      const subList = item.list || item.items || item.subjectList || item.subject_list || item.bannerList || item.cardList;
+      if (Array.isArray(subList) && subList.length > 0) {
+        subList.forEach(sub => finalItems.push(sub));
+      } else {
+        finalItems.push(item);
+      }
+    });
+
+    return finalItems.filter(item => {
+      const t = item.title || item.name || item.caption || item.subjectName || item.bookName || '';
+      return t.trim().length > 0;
+    });
   }
 
   function getPoster(item) {
-    let p = item.cover || item.poster || item.coverUrl || item.verticalCover || item.img || item.thumb || '';
+    if (!item) return '';
+    let p = item.cover || item.poster || item.coverUrl || item.verticalCover || item.img || item.thumb || item.coverPath || '';
+    if (typeof p !== 'string') return '';
+    p = p.trim();
     if (p.startsWith('//')) return 'https:' + p;
     return p;
   }
@@ -163,8 +186,38 @@
     document.getElementById('subNavAnime').style.display = cat === 'anime' ? 'inline-flex' : 'none';
     document.getElementById('subNavDrama').style.display = cat === 'drama' ? 'inline-flex' : 'none';
 
-    if (cat === 'anime') loadAnime('home');
-    else loadDrama('home');
+    if (cat === 'anime') {
+      document.getElementById('sectionTitle').innerText = '🔥 ANIME TERBARU';
+      loadAnime('home');
+    } else {
+      document.getElementById('sectionTitle').innerText = '🔥 DRAMA TERBARU';
+      loadDrama('home');
+    }
+  }
+
+  // DUAL ENGINE FETCH DENGAN FALLBACK CLIENT DIRECT PROXY
+  async function fetchWithFallback(backendUrl, targetDirectUrl) {
+    // 1. Coba lewat backend Vercel
+    try {
+      const res = await fetch(backendUrl);
+      if (res.ok) {
+        const json = await res.json();
+        const items = extractItems(json);
+        if (items && items.length > 0) return items;
+      }
+    } catch (e) {}
+
+    // 2. Fallback Direct Client Proxy (Browser -> CORS Proxy -> Indocast)
+    try {
+      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetDirectUrl)}`;
+      const res = await fetch(proxyUrl, {
+        headers: { "Content-Type": "application/json", "x-api-key": API_KEY }
+      });
+      const json = await res.json();
+      return extractItems(json);
+    } catch (e) {
+      return [];
+    }
   }
 
   // --- ANIME HANDLERS ---
@@ -177,13 +230,11 @@
     grid.innerHTML = '<div class="status-msg">⚡ Memuat data AnimeKompi...</div>';
 
     if (act === 'genres') {
-      document.getElementById('sectionTitle').innerHTML = '🏷️ Genre Anime';
-      const res = await fetch(`/api/anime?action=genres`);
-      const json = await res.json();
-      const genres = extractItems(json);
+      document.getElementById('sectionTitle').innerText = '🏷️ GENRE ANIME';
+      const items = await fetchWithFallback(`/api/anime?action=genres`, `https://indocast.site/api/animekompi/genres`);
       grid.style.display = 'none';
       let html = '<div class="pills-grid">';
-      genres.forEach(g => {
+      items.forEach(g => {
         const name = g.name || g.title || g;
         html += `<button class="pill-btn" onclick="loadAnimeGenre('${name}')">${name}</button>`;
       });
@@ -192,22 +243,26 @@
       return;
     }
 
-    const res = await fetch(`/api/anime?action=${act}`);
-    const json = await res.json();
-    const items = extractItems(json);
+    let directUrl = `https://indocast.site/api/animekompi/home?page=1`;
+    if (act === 'list') directUrl = `https://indocast.site/api/animekompi/list`;
+    if (act === 'schedule') directUrl = `https://indocast.site/api/animekompi/schedule`;
+
+    const items = await fetchWithFallback(`/api/anime?action=${act}`, directUrl);
     renderGrid(items, 'anime');
   }
 
   async function loadAnimeGenre(genreName) {
-    document.getElementById('sectionTitle').innerHTML = `🏷️ Genre: ${genreName}`;
+    document.getElementById('sectionTitle').innerText = `🏷️ GENRE: ${genreName.toUpperCase()}`;
     document.getElementById('subArea').innerHTML = '';
     const grid = document.getElementById('catalogGrid');
     grid.style.display = 'grid';
     grid.innerHTML = '<div class="status-msg">⚡ Memuat genre...</div>';
 
-    const res = await fetch(`/api/anime?action=genredetail&genre=${encodeURIComponent(genreName)}`);
-    const json = await res.json();
-    renderGrid(extractItems(json), 'anime');
+    const items = await fetchWithFallback(
+      `/api/anime?action=genredetail&genre=${encodeURIComponent(genreName)}`, 
+      `https://indocast.site/api/animekompi/genre-detail?genre=${encodeURIComponent(genreName)}&page=1`
+    );
+    renderGrid(items, 'anime');
   }
 
   // --- DRAMA HANDLERS ---
@@ -219,9 +274,26 @@
     grid.style.display = 'grid';
     grid.innerHTML = '<div class="status-msg">⚡ Memuat data Filmbox...</div>';
 
-    const res = await fetch(`/api/drama?action=${act}`);
-    const json = await res.json();
-    const items = extractItems(json);
+    if (act === 'trending') {
+      document.getElementById('sectionTitle').innerText = '🔥 DRAMA TRENDING';
+    } else {
+      document.getElementById('sectionTitle').innerText = '🔥 DRAMA TERBARU';
+    }
+
+    let directUrl = `https://indocast.site/api/filmbox/home`;
+    if (act === 'trending') directUrl = `https://indocast.site/api/filmbox/trending?page=0&perPage=18`;
+
+    const items = await fetchWithFallback(`/api/drama?action=${act}`, directUrl);
+    
+    if (!items || items.length === 0) {
+      grid.innerHTML = `
+        <div class="status-msg">
+          ⚠️ Gagal memuat drama Filmbox.<br>
+          <button class="btn-retry" onclick="loadDrama('${act}')">🔄 Coba Lagi</button>
+        </div>`;
+      return;
+    }
+
     renderGrid(items, 'drama');
   }
 
@@ -236,7 +308,7 @@
 
     grid.innerHTML = '';
     items.forEach(item => {
-      const title = item.title || item.name || item.caption || 'Tanpa Judul';
+      const title = item.title || item.name || item.caption || item.subjectName || 'Tanpa Judul';
       const poster = getPoster(item);
       const card = document.createElement('div');
       card.className = 'card';
@@ -273,29 +345,31 @@
     epGrid.innerHTML = 'Memuat episode...';
     epSelect.innerHTML = '<option value="">Pilih Episode...</option>';
 
-    const res = await fetch(`/api/anime?action=detail&path=${encodeURIComponent(path)}`);
-    const json = await res.json();
-    const data = json.data || json;
-    const epList = data.episode_list || data.episodes || [];
+    try {
+      const res = await fetch(`/api/anime?action=detail&path=${encodeURIComponent(path)}`);
+      const json = await res.json();
+      const data = json.data || json;
+      const epList = data.episode_list || data.episodes || [];
 
-    epGrid.innerHTML = '';
-    if (epList && epList.length > 0) {
-      epList.forEach((ep, i) => {
-        const epId = ep.episode_id || ep.id || ep.path;
-        const epTitle = ep.title || `Eps ${i + 1}`;
+      epGrid.innerHTML = '';
+      if (epList && epList.length > 0) {
+        epList.forEach((ep, i) => {
+          const epId = ep.episode_id || ep.id || ep.path;
+          const epTitle = ep.title || `Eps ${i + 1}`;
 
-        const opt = document.createElement('option');
-        opt.value = epId; opt.textContent = epTitle;
-        epSelect.appendChild(opt);
+          const opt = document.createElement('option');
+          opt.value = epId; opt.textContent = epTitle;
+          epSelect.appendChild(opt);
 
-        const btn = document.createElement('button');
-        btn.className = 'ep-btn';
-        btn.innerText = `Eps ${i + 1}`;
-        btn.onclick = () => playAnimeEp(epId);
-        epGrid.appendChild(btn);
-      });
-      playAnimeEp(epList[0].episode_id || epList[0].id || epList[0].path);
-    }
+          const btn = document.createElement('button');
+          btn.className = 'ep-btn';
+          btn.innerText = `Eps ${i + 1}`;
+          btn.onclick = () => playAnimeEp(epId);
+          epGrid.appendChild(btn);
+        });
+        playAnimeEp(epList[0].episode_id || epList[0].id || epList[0].path);
+      }
+    } catch(e) {}
   }
 
   async function playAnimeEp(epId) {
@@ -304,13 +378,15 @@
     loader.style.display = 'flex';
     iframe.src = 'about:blank';
 
-    const res = await fetch(`/api/anime?action=play&episode_id=${encodeURIComponent(epId)}`);
-    const json = await res.json();
-    const data = json.data || json;
-    const streamUrl = data.url || data.playUrl || data.stream || data.embed || '';
+    try {
+      const res = await fetch(`/api/anime?action=play&episode_id=${encodeURIComponent(epId)}`);
+      const json = await res.json();
+      const data = json.data || json;
+      const streamUrl = data.url || data.playUrl || data.stream || data.embed || '';
 
-    if (streamUrl) iframe.src = streamUrl;
-    else alert('Link video tidak ditemukan.');
+      if (streamUrl) iframe.src = streamUrl;
+      else alert('Link video tidak ditemukan.');
+    } catch(e) {}
     loader.style.display = 'none';
   }
 
@@ -325,22 +401,26 @@
     const epGrid = document.getElementById('epGrid');
     epGrid.innerHTML = 'Memuat episode...';
 
-    const res = await fetch(`/api/drama?action=details&detailPath=${encodeURIComponent(detailPath)}&id=${id}`);
-    const json = await res.json();
-    const data = json.data || json;
-    const epList = data.episodes || data.chapterList || [];
+    try {
+      const res = await fetch(`/api/drama?action=details&detailPath=${encodeURIComponent(detailPath)}&id=${id}`);
+      const json = await res.json();
+      const data = json.data || json;
+      const epList = data.episodes || data.chapterList || [];
 
-    epGrid.innerHTML = '';
-    if (epList && epList.length > 0) {
-      epList.forEach((ep, i) => {
-        const btn = document.createElement('button');
-        btn.className = 'ep-btn';
-        btn.innerText = `Eps ${i + 1}`;
-        btn.onclick = () => playDramaEp(i + 1);
-        epGrid.appendChild(btn);
-      });
-      playDramaEp(1);
-    } else {
+      epGrid.innerHTML = '';
+      if (epList && epList.length > 0) {
+        epList.forEach((ep, i) => {
+          const btn = document.createElement('button');
+          btn.className = 'ep-btn';
+          btn.innerText = `Eps ${i + 1}`;
+          btn.onclick = () => playDramaEp(i + 1);
+          epGrid.appendChild(btn);
+        });
+        playDramaEp(1);
+      } else {
+        playDramaEp(0);
+      }
+    } catch(e) {
       playDramaEp(0);
     }
   }
@@ -351,13 +431,15 @@
     loader.style.display = 'flex';
     iframe.src = 'about:blank';
 
-    const res = await fetch(`/api/drama?action=getplay&subjectId=${currentDramaId}&detailPath=${encodeURIComponent(currentDramaPath)}&se=0&ep=${epNum}`);
-    const json = await res.json();
-    const data = json.data || json;
-    const streamUrl = data.playUrl || data.url || data.embed || '';
+    try {
+      const res = await fetch(`/api/drama?action=getplay&subjectId=${currentDramaId}&detailPath=${encodeURIComponent(currentDramaPath)}&se=0&ep=${epNum}`);
+      const json = await res.json();
+      const data = json.data || json;
+      const streamUrl = data.playUrl || data.url || data.embed || '';
 
-    if (streamUrl) iframe.src = streamUrl;
-    else alert('Link video stream tidak ditemukan.');
+      if (streamUrl) iframe.src = streamUrl;
+      else alert('Link video stream tidak ditemukan.');
+    } catch(e) {}
     loader.style.display = 'none';
   }
 
@@ -372,10 +454,12 @@
       grid.innerHTML = '<div class="status-msg">🔍 Mencari...</div>';
 
       if (currentCategory === 'drama') {
+        document.getElementById('sectionTitle').innerText = `🔍 HASIL PENCARIAN: ${q.toUpperCase()}`;
         const res = await fetch(`/api/drama?action=search&keyword=${encodeURIComponent(q)}`);
         const json = await res.json();
         renderGrid(extractItems(json), 'drama');
       } else {
+        document.getElementById('sectionTitle').innerText = `🔍 HASIL PENCARIAN: ${q.toUpperCase()}`;
         const res = await fetch(`/api/anime?action=home&page=1`);
         const json = await res.json();
         const items = extractItems(json).filter(i => (i.title || i.name || '').toLowerCase().includes(q.toLowerCase()));
@@ -395,7 +479,7 @@
     document.getElementById('videoIframe').src = 'about:blank';
   }
 
-  // START
+  // START DEFAULT
   switchCategory('anime');
 </script>
 </body>
