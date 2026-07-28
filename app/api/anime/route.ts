@@ -10,6 +10,7 @@ export async function GET(req: NextRequest) {
   const path = searchParams.get('path') || '';
   const episode_id = searchParams.get('episode_id') || '';
 
+  // Gunakan API key dari environment, dengan fallback
   const API_KEY = process.env.ANIME_API_KEY || 'bb47332ceca91e3a2c97128a40c798a69306400072cc4b5a352800697069e45c';
 
   let url = '';
@@ -48,8 +49,24 @@ export async function GET(req: NextRequest) {
       },
     });
     const data = await res.json();
-    return NextResponse.json({ success: true, data });
+    
+    // Kirim response dengan status sukses
+    return NextResponse.json({ 
+      success: true, 
+      data: data,
+      // Kirim juga info debug
+      _debug: {
+        url,
+        apiKeyUsed: API_KEY ? 'present' : 'missing',
+        status: res.status,
+        ok: res.ok
+      }
+    });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error('Anime API Error:', error.message);
+    return NextResponse.json({ 
+      success: false, 
+      error: error.message 
+    }, { status: 500 });
   }
 }
