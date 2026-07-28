@@ -56,8 +56,22 @@ export async function GET(req: NextRequest) {
 
     const res = await fetch(url, options);
     const data = await res.json();
-    return NextResponse.json({ success: true, data });
+    
+    return NextResponse.json({ 
+      success: true, 
+      data: data,
+      _debug: {
+        url,
+        apiKeyUsed: API_KEY ? 'present' : 'missing',
+        status: res.status,
+        ok: res.ok
+      }
+    });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error('Drama API Error:', error.message);
+    return NextResponse.json({ 
+      success: false, 
+      error: error.message 
+    }, { status: 500 });
   }
 }
