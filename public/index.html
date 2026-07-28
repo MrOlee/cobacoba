@@ -3,90 +3,149 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="theme-color" content="#121212" />
+<meta name="theme-color" content="#0e1117" />
 <meta name="referrer" content="no-referrer" />
-<title>RAYLIZIIEDESU — Anime Subtitle Indonesia</title>
+<title>RAYLIZIIEDESU — Portal Anime & Drama Subtitle Indonesia</title>
 
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  body { background-color: #121212; color: #ffffff; min-height: 100vh; padding-bottom: 40px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  body { background-color: #0e1117; color: #e2e8f0; min-height: 100vh; padding-bottom: 50px; }
   a { color: inherit; text-decoration: none; }
   button { cursor: pointer; border: none; font-family: inherit; }
 
-  header { background-color: #000000; padding: 18px 15px; text-align: center; border-bottom: 2px solid #00a8e8; }
-  .logo { font-size: 24px; font-weight: 900; letter-spacing: -0.5px; text-transform: uppercase; }
+  /* HEADER */
+  header { background: #000000; padding: 20px 15px; text-align: center; border-bottom: 3px solid #00a8e8; }
+  .logo { font-size: 28px; font-weight: 900; letter-spacing: -0.5px; text-transform: uppercase; }
   .logo .white { color: #ffffff; }
   .logo .blue { color: #00a8e8; }
-  .sub-logo { font-size: 11px; color: #00a8e8; margin-top: 3px; font-weight: 600; }
+  .sub-logo { font-size: 12px; color: #00a8e8; margin-top: 4px; font-weight: 600; letter-spacing: 0.5px; }
 
-  .nav-bar { display: flex; background: #1e1e1e; max-width: 900px; margin: 0 auto; border-bottom: 1px solid #333; }
-  .nav-btn { flex: 1; padding: 12px 5px; text-align: center; background: #1e1e1e; color: #bbb; font-weight: 700; font-size: 13px; text-transform: uppercase; border: none; transition: 0.2s; }
-  .nav-btn.active, .nav-btn:hover { background: #00a8e8; color: #fff; }
+  /* MAIN TAB (ANIME / DRAMA) */
+  .main-tabs { display: flex; background: #161b22; max-width: 960px; margin: 0 auto; border-bottom: 2px solid #21262d; }
+  .main-tab-btn { flex: 1; padding: 14px 10px; text-align: center; background: #161b22; color: #8b949e; font-weight: 800; font-size: 15px; text-transform: uppercase; border: none; transition: 0.2s; letter-spacing: 1px; }
+  .main-tab-btn.active { background: #00a8e8; color: #ffffff; }
 
-  .search-wrap { max-width: 900px; margin: 10px auto; padding: 0 10px; }
-  .search-input { width: 100%; padding: 11px 14px; background: #ffffff; color: #000; border: none; border-radius: 4px; font-size: 14px; outline: none; font-weight: 500; }
+  /* SUB NAVIGATION BAR */
+  .sub-nav-container { background: #161b22; border-bottom: 1px solid #30363d; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .sub-nav-container::-webkit-scrollbar { display: none; }
+  .sub-nav { display: inline-flex; max-width: 960px; width: 100%; padding: 6px 10px; gap: 4px; }
+  .sub-btn { background: #21262d; color: #c9d1d9; padding: 8px 14px; font-size: 12px; font-weight: 700; border-radius: 4px; white-space: nowrap; transition: 0.2s; }
+  .sub-btn:hover, .sub-btn.active { background: #00a8e8; color: #fff; }
 
-  .container { max-width: 900px; margin: 0 auto; padding: 10px; }
+  /* CENTERED SEARCH BAR */
+  .search-section { max-width: 960px; margin: 15px auto 10px; padding: 0 15px; text-align: center; }
+  .search-box-wrap { position: relative; max-width: 550px; margin: 0 auto; }
+  .search-input { width: 100%; padding: 12px 18px; background: #ffffff; color: #000000; border: 2px solid #00a8e8; border-radius: 25px; font-size: 14px; outline: none; font-weight: 600; text-align: center; box-shadow: 0 4px 12px rgba(0, 168, 232, 0.15); }
+  .search-input::placeholder { color: #666; font-weight: 400; }
 
-  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
-  @media (min-width: 600px) { .grid { grid-template-columns: repeat(4, 1fr); gap: 12px; } }
+  /* CONTAINER UTAMA */
+  .container { max-width: 960px; margin: 0 auto; padding: 12px; }
 
-  .card { background: #1c1c1c; border: 1px solid #2d2d2d; border-radius: 6px; overflow: hidden; cursor: pointer; transition: transform 0.2s; position: relative; }
-  .card:hover { transform: translateY(-3px); border-color: #00a8e8; }
+  .section-title { font-size: 16px; font-weight: 800; color: #00a8e8; margin: 15px 0 12px; display: flex; align-items: center; gap: 8px; border-left: 4px solid #00a8e8; padding-left: 10px; text-transform: uppercase; }
+
+  /* GRID KATALOG */
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (min-width: 550px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 800px) { .grid { grid-template-columns: repeat(4, 1fr); gap: 15px; } }
+
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s, border-color 0.2s; position: relative; display: flex; flex-direction: column; }
+  .card:hover { transform: translateY(-4px); border-color: #00a8e8; }
   
-  .poster-box { width: 100%; aspect-ratio: 3/4; background: #262626; position: relative; overflow: hidden; }
+  .poster-box { width: 100%; aspect-ratio: 3/4; background: #21262d; position: relative; overflow: hidden; }
   .poster-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
   
-  .card-title { padding: 10px; font-size: 13px; font-weight: 700; line-height: 1.3; color: #eee; height: 48px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .badge-tag { position: absolute; top: 8px; left: 8px; background: rgba(0, 168, 232, 0.9); color: #fff; font-size: 10px; font-weight: 800; padding: 3px 7px; border-radius: 3px; text-transform: uppercase; }
 
+  .card-title { padding: 10px 12px; font-size: 13px; font-weight: 700; line-height: 1.35; color: #f0f6fc; height: 48px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+  /* GENRE & SCHEDULE GRID */
+  .pills-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .pill-btn { background: #21262d; color: #58a6ff; border: 1px solid #30363d; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; transition: 0.2s; }
+  .pill-btn:hover, .pill-btn.active { background: #00a8e8; color: #fff; border-color: #00a8e8; }
+
+  /* PLAYER VIEW */
   .player-view { display: none; }
   .player-view.active { display: block; }
 
-  .btn-back { background: #2a2a2a; color: #fff; padding: 8px 14px; border-radius: 4px; font-size: 13px; font-weight: 700; margin-bottom: 12px; display: inline-block; }
-  .btn-back:hover { background: #00a8e8; }
+  .btn-back { background: #21262d; color: #fff; padding: 9px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; margin-bottom: 15px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #30363d; }
+  .btn-back:hover { background: #00a8e8; border-color: #00a8e8; }
 
-  .title-anime { font-size: 18px; font-weight: 800; color: #00a8e8; margin-bottom: 12px; line-height: 1.3; }
+  .title-anime { font-size: 20px; font-weight: 800; color: #00a8e8; margin-bottom: 12px; line-height: 1.3; }
 
-  .player-box { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border: 1px solid #333; border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+  .player-box { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; margin-bottom: 15px; }
   .player-box iframe { width: 100%; height: 100%; border: none; }
-  .loading-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; color: #00a8e8; font-weight: 700; font-size: 14px; }
+  .loading-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #0d1117; color: #00a8e8; font-weight: 700; font-size: 14px; }
 
-  .ep-select { width: 100%; padding: 10px; background: #1c1c1c; border: 1px solid #00a8e8; color: #fff; border-radius: 4px; font-size: 13px; outline: none; margin-bottom: 12px; }
+  .ep-select { width: 100%; padding: 11px; background: #161b22; border: 1px solid #00a8e8; color: #fff; border-radius: 6px; font-size: 13px; outline: none; margin-bottom: 15px; font-weight: 600; }
 
-  .ep-grid-title { font-size: 14px; font-weight: 700; margin: 15px 0 10px; color: #00a8e8; }
-  .ep-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px; }
-  .ep-btn { background: #1c1c1c; border: 1px solid #333; color: #fff; padding: 8px 4px; font-size: 12px; font-weight: 700; text-align: center; border-radius: 4px; }
+  .ep-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 8px; }
+  .ep-btn { background: #161b22; border: 1px solid #30363d; color: #fff; padding: 9px 4px; font-size: 12px; font-weight: 700; text-align: center; border-radius: 6px; }
   .ep-btn.active, .ep-btn:hover { background: #00a8e8; border-color: #00a8e8; }
 
-  .status-msg { text-align: center; padding: 40px 15px; color: #aaa; grid-column: 1 / -1; font-size: 14px; line-height: 1.5; }
-  .status-msg.error { color: #f87171; background: #1a1010; border: 1px solid #4a1d1d; border-radius: 6px; }
-  .btn-retry { margin-top: 12px; background: #00a8e8; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 13px; }
+  .status-msg { text-align: center; padding: 50px 20px; color: #8b949e; grid-column: 1 / -1; font-size: 14px; line-height: 1.6; }
+  .status-msg.error { color: #f85149; background: #161b22; border: 1px solid #f85149; border-radius: 8px; }
+  .btn-retry { margin-top: 14px; background: #00a8e8; color: #fff; border: none; padding: 9px 18px; border-radius: 6px; font-weight: 700; font-size: 13px; }
+
+  .info-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 18px; margin-bottom: 15px; line-height: 1.6; font-size: 14px; }
 </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
   <div class="logo">
     <span class="white">RAYLIZIIE</span><span class="blue">DESU</span>
   </div>
-  <div class="sub-logo">Anime Subtitle Indonesia</div>
+  <div class="sub-logo">Portal Anime & Drama Subtitle Indonesia</div>
 </header>
 
-<div class="nav-bar">
-  <button class="nav-btn active" id="btnTabAnime" onclick="switchChannel('2')">ANIME</button>
-  <button class="nav-btn" id="btnTabDrama" onclick="switchChannel('1')">DRAMA</button>
+<!-- MAIN TABS (ANIME vs DRAMA) -->
+<div class="main-tabs">
+  <button class="main-tab-btn active" id="btnMainAnime" onclick="selectMainCategory('anime')">ANIME</button>
+  <button class="main-tab-btn" id="btnMainDrama" onclick="selectMainCategory('drama')">DRAMA</button>
 </div>
 
-<div class="search-wrap">
-  <input type="text" id="searchInput" class="search-input" placeholder="Cari judul anime..." />
+<!-- SUB NAVIGATION BARS -->
+<div class="sub-nav-container">
+  <!-- ANIME SUB NAV -->
+  <div class="sub-nav" id="subNavAnime">
+    <button class="sub-btn active" onclick="loadAnimeSub('home', this)">🏠 Home</button>
+    <button class="sub-btn" onclick="loadAnimeSub('animelist', this)">📜 Anime List</button>
+    <button class="sub-btn" onclick="loadAnimeSub('jadwal', this)">📅 Jadwal Rilis</button>
+    <button class="sub-btn" onclick="loadAnimeSub('ongoing', this)">🔄 Anime On-Going</button>
+    <button class="sub-btn" onclick="loadAnimeSub('genre', this)">🏷️ Genre List</button>
+  </div>
+
+  <!-- DRAMA SUB NAV -->
+  <div class="sub-nav" id="subNavDrama" style="display:none;">
+    <button class="sub-btn active" onclick="loadDramaSub('home', this)">🏠 Home</button>
+    <button class="sub-btn" onclick="loadDramaSub('tab', this)">📑 Tab</button>
+    <button class="sub-btn" onclick="loadDramaSub('tabsearch', this)">🔍 Tab Search</button>
+    <button class="sub-btn" onclick="loadDramaSub('filter', this)">🎛️ Filter Items</button>
+    <button class="sub-btn" onclick="loadDramaSub('list', this)">📋 List</button>
+    <button class="sub-btn" onclick="loadDramaSub('info', this)">ℹ️ Info</button>
+    <button class="sub-btn" onclick="loadDramaSub('detail', this)">📊 Detail Data</button>
+    <button class="sub-btn" onclick="loadDramaSub('genre', this)">🏷️ Genre</button>
+    <button class="sub-btn" onclick="loadDramaSub('trending', this)">🔥 Trending</button>
+  </div>
 </div>
 
+<!-- CENTERED SEARCH BAR -->
+<div class="search-section">
+  <div class="search-box-wrap">
+    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Cari judul anime atau drama..." />
+  </div>
+</div>
+
+<!-- CONTAINER UTAMA -->
 <div class="container">
 
   <!-- KATALOG VIEW -->
   <div id="catalogView">
+    <div id="sectionTitle" class="section-title">🔥 Anime Terbaru</div>
+    <div id="subContentArea"></div>
     <div id="catalogGrid" class="grid">
-      <div class="status-msg">⚡ Memuat katalog anime...</div>
+      <div class="status-msg">⚡ Memuat data Indocast API...</div>
     </div>
   </div>
 
@@ -96,15 +155,15 @@
     <h1 id="animeTitle" class="title-anime">Judul Anime</h1>
 
     <div class="player-box">
-      <div id="playerLoading" class="loading-text" style="display:none;">⏳ Memuat Video Stream...</div>
-      <iframe id="videoIframe" src="about:blank" allowfullscreen></iframe>
+      <div id="playerLoading" class="loading-text" style="display:none;">⏳ Memuat Stream Video...</div>
+      <iframe id="videoIframe" src="about:blank" allowfullscreen referrerpolicy="no-referrer"></iframe>
     </div>
 
     <select id="selectEp" class="ep-select">
       <option value="">Pilih Episode...</option>
     </select>
 
-    <div class="ep-grid-title">Daftar Episode:</div>
+    <div class="section-title">📺 Daftar Episode</div>
     <div id="epGrid" class="ep-grid"></div>
   </div>
 
@@ -112,11 +171,15 @@
 
 <script>
   const API_KEY = "bb47332ceca91e3a2c97128a40c798a69306400072cc4b5a352800697069e45c";
+  let currentMainCategory = "anime"; // "anime" | "drama"
   let allCatalogData = [];
   let currentAnimeId = "";
   let currentAnimePath = "";
 
-  // FUNGSI EKSTRAKSI ITEM ANIME ASLI (MENGIMBANGI STRUKTUR KATEGORI)
+  const ANIME_GENRES = ["Action", "Adventure", "Comedy", "Demon", "Drama", "Ecchi", "Fantasy", "Game", "Harem", "Historical", "Horror", "Isekai", "Josei", "Magic", "Martial Arts", "Mecha", "Military", "Music", "Mystery", "Psychological", "Romance", "School", "Sci-Fi", "Seinen", "Shoujo", "Shounen", "Slice of Life", "Sports", "Super Power", "Supernatural", "Thriller", "Vampire"];
+  const DRAMA_GENRES = ["Romance", "Thriller", "Historical", "Mystery", "Comedy", "Action", "Family", "Medical", "Youth", "Fantasy", "Crime"];
+
+  // UTILITY: Extract Items Array
   function extractAnimeItems(resData) {
     if (!resData) return [];
     let root = resData.data || resData;
@@ -127,26 +190,23 @@
       listArr = root.list || root.items || root.records || root.data || [];
     }
 
-    let finalAnimeList = [];
-
+    let finalItems = [];
     listArr.forEach(item => {
-      // Jika item berisi sub-list (seperti kelompok "Carlos_Indonesia"), ambil anime di dalamnya!
       const subItems = item.list || item.items || item.books || item.cardList || item.bannerList;
       if (Array.isArray(subItems) && subItems.length > 0) {
-        subItems.forEach(sub => finalAnimeList.push(sub));
+        subItems.forEach(sub => finalItems.push(sub));
       } else {
-        finalAnimeList.push(item);
+        finalItems.push(item);
       }
     });
 
-    // Filter agar hanya anime valid yang punya judul yang ditampilkan
-    return finalAnimeList.filter(item => {
+    return finalItems.filter(item => {
       const t = item.title || item.name || item.bookName || item.caption || '';
       return t.trim().length > 0;
     });
   }
 
-  // FUNGSI MENDAPATKAN LINK COVER GAMBAR LENGKAP
+  // UTILITY: Extract Poster Image
   function getPosterUrl(item) {
     if (!item) return '';
     let raw = item.verticalCover || item.cover || item.coverUrl || item.poster || item.img || item.pic || item.image || item.horizontalCover || item.thumb || item.thumbnail || item.bookCover || '';
@@ -158,13 +218,16 @@
     return raw;
   }
 
-  async function fetchList(channelId) {
+  // CORE FETCH FUNCTION WITH CORS FALLBACK
+  async function fetchListDualEngine(params) {
+    const queryStr = new URLSearchParams(params).toString();
     try {
-      const res = await fetch(`/api/list?channelId=${channelId}&page=1`);
+      const res = await fetch(`/api/list?${queryStr}`);
       if (res.ok) {
         const json = await res.json();
-        const items = extractAnimeItems(json);
-        if (items && items.length > 0) return items;
+        if (json && !json.fallbackRequired) {
+          return json;
+        }
       }
     } catch (e) {}
 
@@ -175,27 +238,119 @@
       const res = await fetch(proxyUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-api-key": API_KEY },
-        body: JSON.stringify({ channelId: String(channelId), page: "1", perPage: "24", sort: "ForYou", genre: "All", country: "All" })
+        body: JSON.stringify({ channelId: String(params.channelId || "2"), page: "1", perPage: "24", sort: "ForYou", genre: "All", country: "All" })
       });
-      const json = await res.json();
-      return extractAnimeItems(json);
+      return await res.json();
     } catch (e) {
-      return [];
+      return null;
     }
   }
 
-  async function loadCatalog(channelId = "2") {
-    showCatalog();
-    const grid = document.getElementById('catalogGrid');
-    grid.innerHTML = '<div class="status-msg">⚡ Memuat katalog anime...</div>';
+  // MAIN CATEGORY SWITCHER (ANIME / DRAMA)
+  function selectMainCategory(cat) {
+    currentMainCategory = cat;
+    document.getElementById('btnMainAnime').classList.toggle('active', cat === 'anime');
+    document.getElementById('btnMainDrama').classList.toggle('active', cat === 'drama');
 
-    const items = await fetchList(channelId);
+    document.getElementById('subNavAnime').style.display = cat === 'anime' ? 'inline-flex' : 'none';
+    document.getElementById('subNavDrama').style.display = cat === 'drama' ? 'inline-flex' : 'none';
+
+    document.getElementById('searchInput').placeholder = cat === 'anime' 
+      ? '🔍 Cari judul anime...' 
+      : '🔍 Cari judul drama...';
+
+    if (cat === 'anime') {
+      const activeBtn = document.querySelector('#subNavAnime .sub-btn.active') || document.querySelector('#subNavAnime .sub-btn');
+      loadAnimeSub('home', activeBtn);
+    } else {
+      const activeBtn = document.querySelector('#subNavDrama .sub-btn.active') || document.querySelector('#subNavDrama .sub-btn');
+      loadDramaSub('home', activeBtn);
+    }
+  }
+
+  function setActiveSubBtn(containerId, btnElem) {
+    document.querySelectorAll(`#${containerId} .sub-btn`).forEach(b => b.classList.remove('active'));
+    if (btnElem) btnElem.classList.add('active');
+  }
+
+  // --- ANIME SUB NAVIGATION HANDLERS ---
+  async function loadAnimeSub(type, btnElem) {
+    setActiveSubBtn('subNavAnime', btnElem);
+    showCatalog();
+    const titleElem = document.getElementById('sectionTitle');
+    const subArea = document.getElementById('subContentArea');
+    subArea.innerHTML = '';
+
+    if (type === 'home') {
+      titleElem.innerHTML = '🔥 Anime On-Going & Terbaru';
+      await loadCatalogData({ type: 'list', channelId: '2', sort: 'ForYou' });
+    } else if (type === 'animelist') {
+      titleElem.innerHTML = '📜 Semua Katalog Anime (A-Z)';
+      await loadCatalogData({ type: 'list', channelId: '2', sort: 'All' });
+    } else if (type === 'jadwal') {
+      titleElem.innerHTML = '📅 Jadwal Rilis Anime Minggu Ini';
+      renderScheduleView();
+    } else if (type === 'ongoing') {
+      titleElem.innerHTML = '🔄 Anime On-Going Hari Ini';
+      await loadCatalogData({ type: 'tabsearch', tabId: '2', page: '1' });
+    } else if (type === 'genre') {
+      titleElem.innerHTML = '🏷️ Pilih Genre Anime';
+      renderGenrePills(ANIME_GENRES, '2');
+    }
+  }
+
+  // --- DRAMA SUB NAVIGATION HANDLERS ---
+  async function loadDramaSub(type, btnElem) {
+    setActiveSubBtn('subNavDrama', btnElem);
+    showCatalog();
+    const titleElem = document.getElementById('sectionTitle');
+    const subArea = document.getElementById('subContentArea');
+    subArea.innerHTML = '';
+
+    if (type === 'home') {
+      titleElem.innerHTML = '🔥 Drama Terpopuler & Terbaru';
+      await loadCatalogData({ type: 'list', channelId: '1', sort: 'ForYou' });
+    } else if (type === 'tab') {
+      titleElem.innerHTML = '📑 Kategori Tab Drama';
+      await loadCatalogData({ type: 'tab', channelId: '1' });
+    } else if (type === 'tabsearch') {
+      titleElem.innerHTML = '🔍 Drama Tab Search';
+      await loadCatalogData({ type: 'tabsearch', tabId: '1', page: '1' });
+    } else if (type === 'filter') {
+      titleElem.innerHTML = '🎛️ Filter Items Drama';
+      await loadCatalogData({ type: 'filteritems', tabId: '1', filterItemVer: 'v3' });
+    } else if (type === 'list') {
+      titleElem.innerHTML = '📋 Daftar Katalog Drama Lengkap';
+      await loadCatalogData({ type: 'list', channelId: '1', sort: 'All' });
+    } else if (type === 'info') {
+      titleElem.innerHTML = 'ℹ️ Informasi & Pengumuman Indocast';
+      renderInfoView();
+    } else if (type === 'detail') {
+      titleElem.innerHTML = '📊 Detail Data Drama';
+      await loadCatalogData({ type: 'tabsearch', tabId: '1', page: '1' });
+    } else if (type === 'genre') {
+      titleElem.innerHTML = '🏷️ Pilih Genre Drama';
+      renderGenrePills(DRAMA_GENRES, '1');
+    } else if (type === 'trending') {
+      titleElem.innerHTML = '🔥 Drama Trending Hari Ini';
+      await loadCatalogData({ type: 'list', channelId: '1', sort: 'Hot' });
+    }
+  }
+
+  // LOAD DATA & RENDER GRID
+  async function loadCatalogData(apiParams) {
+    const grid = document.getElementById('catalogGrid');
+    grid.style.display = 'grid';
+    grid.innerHTML = '<div class="status-msg">⚡ Memuat data Indocast API...</div>';
+
+    const res = await fetchListDualEngine(apiParams);
+    const items = extractAnimeItems(res);
 
     if (!items || items.length === 0) {
       grid.innerHTML = `
         <div class="status-msg error">
-          ⚠️ Gagal mengambil data anime.<br>
-          <button class="btn-retry" onclick="loadCatalog('${channelId}')">🔄 Muat Ulang</button>
+          ⚠️ Gagal mengambil data.<br>
+          <button class="btn-retry" onclick="loadCatalogData(${JSON.stringify(apiParams).replace(/"/g, '&quot;')})">🔄 Muat Ulang</button>
         </div>`;
       return;
     }
@@ -206,8 +361,9 @@
 
   function renderGrid(items) {
     const grid = document.getElementById('catalogGrid');
+    grid.style.display = 'grid';
     if (!items || items.length === 0) {
-      grid.innerHTML = '<div class="status-msg">Data anime tidak ditemukan.</div>';
+      grid.innerHTML = '<div class="status-msg">Tidak ada data ditemukan.</div>';
       return;
     }
 
@@ -217,16 +373,20 @@
       const poster = getPosterUrl(item);
       const id = item.id || item.bookId || item.detailPath || '';
       const path = item.detailPath || item.slug || item.bookId || item.id || '';
+      const epText = item.latestChapter || item.episodes || item.episode || '';
 
       const card = document.createElement('div');
       card.className = 'card';
       
       const posterHTML = poster 
-        ? `<img src="${poster}" alt="${title}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x400/1e293b/00a8e8?text=${encodeURIComponent(title)}';" />`
+        ? `<img src="${poster}" alt="${title}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x400/21262d/00a8e8?text=${encodeURIComponent(title)}';" />`
         : `<div style="padding:10px; font-size:11px; color:#aaa; text-align:center; height:100%; display:flex; align-items:center; justify-content:center;">${title}</div>`;
 
       card.innerHTML = `
-        <div class="poster-box">${posterHTML}</div>
+        <div class="poster-box">
+          ${posterHTML}
+          ${epText ? `<div class="badge-tag">${epText}</div>` : ''}
+        </div>
         <div class="card-title">${title}</div>
       `;
       card.onclick = () => openDetail(id, path, title);
@@ -234,6 +394,69 @@
     });
   }
 
+  // RENDER GENRE PILLS
+  function renderGenrePills(genres, channelId) {
+    const subArea = document.getElementById('subContentArea');
+    const grid = document.getElementById('catalogGrid');
+    grid.style.display = 'none';
+
+    let html = '<div class="pills-grid">';
+    genres.forEach(g => {
+      html += `<button class="pill-btn" onclick="filterByGenre('${g}', '${channelId}')">${g}</button>`;
+    });
+    html += '</div>';
+    subArea.innerHTML = html;
+  }
+
+  async function filterByGenre(genreName, channelId) {
+    document.getElementById('sectionTitle').innerHTML = `🏷️ Genre: ${genreName}`;
+    await loadCatalogData({ type: 'list', channelId: channelId, genre: genreName });
+  }
+
+  // RENDER SCHEDULE VIEW
+  function renderScheduleView() {
+    const subArea = document.getElementById('subContentArea');
+    const grid = document.getElementById('catalogGrid');
+    grid.style.display = 'none';
+
+    const days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
+    let html = '<div style="display:flex; flex-direction:column; gap:12px;">';
+    days.forEach(day => {
+      html += `
+        <div class="info-card" style="margin-bottom:0;">
+          <h3 style="color:#00a8e8; margin-bottom:8px;">📅 Rilis Hari ${day}</h3>
+          <p style="color:#8b949e; font-size:13px;">Klik tombol di bawah untuk melihat judul anime yang update pada hari ${day}.</p>
+          <button class="pill-btn" style="margin-top:10px;" onclick="loadCatalogData({type:'list', channelId:'2', sort:'ForYou'})">Lihat Anime ${day}</button>
+        </div>
+      `;
+    });
+    html += '</div>';
+    subArea.innerHTML = html;
+  }
+
+  // RENDER INFO VIEW
+  async function renderInfoView() {
+    const subArea = document.getElementById('subContentArea');
+    const grid = document.getElementById('catalogGrid');
+    grid.style.display = 'none';
+
+    subArea.innerHTML = '<div class="status-msg">⚡ Memuat informasi API...</div>';
+    
+    try {
+      const res = await fetchListDualEngine({ type: 'info' });
+      subArea.innerHTML = `
+        <div class="info-card">
+          <h3 style="color:#00a8e8; margin-bottom:8px;">📢 Info Server Indocast API</h3>
+          <p>Status Server: <span style="color:#3fb950; font-weight:bold;">Online (Active)</span></p>
+          <p style="margin-top:6px; color:#8b949e;">Seluruh endpoint terhubung langsung ke server Dramovnime Indocast.</p>
+        </div>
+      `;
+    } catch (e) {
+      subArea.innerHTML = '<div class="status-msg error">Gagal memuat info server.</div>';
+    }
+  }
+
+  // DETAIL & PLAYER HANDLER
   async function openDetail(id, path, title) {
     currentAnimeId = id;
     currentAnimePath = path;
@@ -316,15 +539,13 @@
     document.getElementById('videoIframe').src = 'about:blank';
   }
 
-  function switchChannel(ch) {
-    document.getElementById('btnTabAnime').classList.toggle('active', ch === '2');
-    document.getElementById('btnTabDrama').classList.toggle('active', ch === '1');
-    loadCatalog(ch);
-  }
-
+  // SEARCH INPUT EVENT
   document.getElementById('searchInput').addEventListener('input', (e) => {
     const q = e.target.value.toLowerCase().trim();
-    if (!q) { renderGrid(allCatalogData); return; }
+    if (!q) { 
+      renderGrid(allCatalogData); 
+      return; 
+    }
     const filtered = allCatalogData.filter(item => {
       const t = (item.title || item.name || item.bookName || item.caption || '').toLowerCase();
       return t.includes(q);
@@ -336,8 +557,8 @@
     if (e.target.value) playEp(e.target.value);
   });
 
-  // START
-  loadCatalog("2");
+  // START DEFAULT
+  selectMainCategory("anime");
 </script>
 </body>
 </html>
