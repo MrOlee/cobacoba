@@ -6,17 +6,18 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const apiKey = process.env.INDOCAST_API_KEY || "bb47332ceca91e3a2c97128a40c798a69306400072cc4b5a352800697069e45c";
+  const query = { ...req.query, ...req.body };
   const { 
     action = "home", 
     page = "1", 
-    perPage = "18", 
+    perPage = "28", 
     keyword = "", 
     detailPath = "", 
     id = "", 
     subjectId = "", 
     se = "0", 
     ep = "0" 
-  } = { ...req.query, ...req.body };
+  } = query;
 
   let targetUrl = "";
   let options = {
@@ -24,7 +25,7 @@ module.exports = async (req, res) => {
     headers: {
       "Content-Type": "application/json",
       "x-api-key": apiKey,
-      "User-Agent": "okhttp/4.12.0",
+      "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
       "Accept": "application/json, text/plain, */*"
     }
   };
@@ -45,11 +46,12 @@ module.exports = async (req, res) => {
   } else if (action === "details") {
     targetUrl = `https://indocast.site/api/filmbox/details?detailPath=${encodeURIComponent(detailPath)}&id=${id}`;
   } else if (action === "getplay") {
-    targetUrl = `https://indocast.site/api/filmbox/getplay?subjectId=${subjectId || id}&detailPath=${encodeURIComponent(detailPath)}&se=${se}&ep=${ep}&lang=in_id`;
+    const activeSubId = subjectId || id;
+    targetUrl = `https://indocast.site/api/filmbox/getplay?subjectId=${activeSubId}&detailPath=${encodeURIComponent(detailPath)}&se=${se}&ep=${ep}&lang=in_id`;
   }
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 4500);
+  const timer = setTimeout(() => controller.abort(), 6000);
 
   try {
     options.signal = controller.signal;
