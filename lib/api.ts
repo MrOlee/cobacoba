@@ -1,30 +1,33 @@
 // lib/api.ts
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://indocast.site/api';
-const FILMBOX_KEY = process.env.NEXT_PUBLIC_FILMBOX_API_KEY || '';
-const ANIMEKOMPI_KEY = process.env.NEXT_PUBLIC_ANIMEKOMPI_API_KEY || '';
+const FILMBOX_KEY = process.env.NEXT_PUBLIC_FILMBOX_API_KEY || '849332c4d5ba58d0d5e9563380f5472de70c74bb598f2c5cbbb5f6c274063a51';
+const ANIMEKOMPI_KEY = process.env.NEXT_PUBLIC_ANIMEKOMPI_API_KEY || 'bb47332ceca91e3a2c97128a40c798a69306400072cc4b5a352800697069e45c';
 
 async function fetcher(endpoint: string, apiKey: string, options: RequestInit = {}) {
-  const res = await fetch(`${BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      ...(options.headers || {}),
-    },
-    next: { revalidate: 3600 }, // Cache 1 jam
-  });
+  try {
+    const res = await fetch(`${BASE_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        ...(options.headers || {}),
+      },
+      cache: 'no-store', // Mencegah caching error pada SSR Vercel
+    });
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch from ${endpoint}: ${res.statusText}`);
+    if (!res.ok) {
+      console.error(`API Error ${endpoint}: ${res.status}`);
+      return null;
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error(`Fetch Exception ${endpoint}:`, error);
+    return null;
   }
-
-  return res.json();
 }
 
-// ==========================================
-// FILMBOX API ENDPOINTS
-// ==========================================
 export const filmboxAPI = {
   getHome: () => fetcher('/filmbox/home', FILMBOX_KEY),
   search: (keyword: string, page = '1', perPage = '28') =>
@@ -43,9 +46,6 @@ export const filmboxAPI = {
     ),
 };
 
-// ==========================================
-// ANIMEKOMPI API ENDPOINTS
-// ==========================================
 export const animeKompiAPI = {
   getHome: (page = 1) => fetcher(`/animekompi/home?page=${page}`, ANIMEKOMPI_KEY),
   getSchedule: () => fetcher('/animekompi/schedule', ANIMEKOMPI_KEY),
