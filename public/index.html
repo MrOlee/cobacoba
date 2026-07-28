@@ -109,7 +109,7 @@
 <div class="container">
 
   <div id="catalogView">
-    <div id="sectionTitle" class="section-title">🔥 Anime Terbaru</div>
+    <div id="sectionTitle" class="section-title">🔥 ANIME TERBARU</div>
     <div id="subArea"></div>
     <div id="catalogGrid" class="grid">
       <div class="status-msg">⚡ Memuat data...</div>
@@ -137,12 +137,40 @@
 
 <script>
   const API_KEY = "bb47332ceca91e3a2c97128a40c798a69306400072cc4b5a352800697069e45c";
-  let currentCategory = "anime"; // "anime" | "drama"
+  let currentCategory = "anime";
   let currentAnimePath = "";
   let currentDramaId = "";
   let currentDramaPath = "";
 
-  // EKSTRAKSI ITEM TINGKAT DALAM (MEMBONGKAR STRUKTUR FILMBOX & ANIMEKOMPI)
+  // PENELUSURAN STREAM URL SECARA MENDALAM (DEEP SEARCH)
+  function findStreamUrl(obj) {
+    if (!obj) return '';
+    if (typeof obj === 'string') {
+      if (obj.startsWith('http://') || obj.startsWith('https://') || obj.startsWith('//')) {
+        if (obj.includes('.m3u8') || obj.includes('.mp4') || obj.includes('stream') || obj.includes('embed') || obj.includes('play') || obj.includes('video')) {
+          return obj.startsWith('//') ? 'https:' + obj : obj;
+        }
+      }
+      return '';
+    }
+    if (typeof obj === 'object') {
+      const priorityKeys = ['playUrl', 'url', 'mediaUrl', 'play_url', 'videoUrl', 'stream', 'hls', 'm3u8', 'link', 'embedUrl', 'embed_url', 'embed', 'play_path', 'path'];
+      for (let k of priorityKeys) {
+        if (obj[k] && typeof obj[k] === 'string' && (obj[k].startsWith('http') || obj[k].startsWith('//'))) {
+          return obj[k].startsWith('//') ? 'https:' + obj[k] : obj[k];
+        }
+      }
+      for (let key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          let res = findStreamUrl(obj[key]);
+          if (res) return res;
+        }
+      }
+    }
+    return '';
+  }
+
+  // EKSTRAKSI ITEM UNTUK KATALOG & SEARCH
   function extractItems(json) {
     if (!json) return [];
     let root = json.data || json;
@@ -150,7 +178,7 @@
 
     if (Array.isArray(root)) listArr = root;
     else if (typeof root === 'object') {
-      listArr = root.list || root.items || root.records || root.results || root.subjectList || root.subject_list || [];
+      listArr = root.list || root.items || root.records || root.results || root.subjectList || root.subject_list || root.searchResultList || [];
     }
 
     let finalItems = [];
@@ -165,18 +193,39 @@
     });
 
     return finalItems.filter(item => {
-      const t = item.title || item.name || item.caption || item.subjectName || item.bookName || '';
+      const t = item.title || item.name || item.caption || item.subjectName || item.bookName || item.titleName || '';
       return t.trim().length > 0;
     });
   }
 
+  // DETEKSI POSTER SEMUA VARIAN DENGAN FALLBACK PROTOKOL
   function getPoster(item) {
     if (!item) return '';
-    let p = item.cover || item.poster || item.coverUrl || item.verticalCover || item.img || item.thumb || item.coverPath || '';
-    if (typeof p !== 'string') return '';
-    p = p.trim();
-    if (p.startsWith('//')) return 'https:' + p;
-    return p;
+    let candidates = [
+      item.cover, item.poster, item.coverUrl, item.verticalCover, item.img, item.thumb,
+      item.coverPath, item.image, item.picture, item.posterPath, item.cover_path,
+      item.vertical_cover, item.horizontal_cover, item.icon, item.avatar, item.thumbnail
+    ];
+    for (let c of candidates) {
+      if (!c) continue;
+      if (typeof c === 'string' && c.trim().length > 0) {
+        let p = c.trim();
+        if (p.startsWith('//')) return 'https:' + p;
+        if (p.startsWith('http://') || p.startsWith('https://')) return p;
+        if (p.startsWith('/')) return 'https://indocast.site' + p;
+        return p;
+      }
+      if (typeof c === 'object' && c !== null) {
+        let url = c.url || c.path || c.link || c.src || '';
+        if (typeof url === 'string' && url.trim().length > 0) {
+          let p = url.trim();
+          if (p.startsWith('//')) return 'https:' + p;
+          if (p.startsWith('http://') || p.startsWith('https://')) return p;
+          return p;
+        }
+      }
+    }
+    return '';
   }
 
   function switchCategory(cat) {
@@ -195,9 +244,8 @@
     }
   }
 
-  // DUAL ENGINE FETCH DENGAN FALLBACK CLIENT DIRECT PROXY
+  // FETCH MULTI-PROXY (VERCEL -> CORSPROXY -> ALLORIGINS)
   async function fetchWithFallback(backendUrl, targetDirectUrl) {
-    // 1. Coba lewat backend Vercel
     try {
       const res = await fetch(backendUrl);
       if (res.ok) {
@@ -207,16 +255,39 @@
       }
     } catch (e) {}
 
-    // 2. Fallback Direct Client Proxy (Browser -> CORS Proxy -> Indocast)
     try {
       const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetDirectUrl)}`;
-      const res = await fetch(proxyUrl, {
-        headers: { "Content-Type": "application/json", "x-api-key": API_KEY }
-      });
+      const res = await fetch(proxyUrl, { headers: { "Content-Type": "application/json", "x-api-key": API_KEY } });
+      const json = await res.json();
+      const items = extractItems(json);
+      if (items && items.length > 0) return items;
+    } catch (e) {}
+
+    try {
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetDirectUrl)}`;
+      const res = await fetch(proxyUrl);
       const json = await res.json();
       return extractItems(json);
     } catch (e) {
       return [];
+    }
+  }
+
+  async function fetchWithFallbackSingle(backendUrl, targetDirectUrl) {
+    try {
+      const res = await fetch(backendUrl);
+      if (res.ok) {
+        const json = await res.json();
+        if (json && (json.data || json.success !== false)) return json;
+      }
+    } catch (e) {}
+
+    try {
+      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetDirectUrl)}`;
+      const res = await fetch(proxyUrl, { headers: { "Content-Type": "application/json", "x-api-key": API_KEY } });
+      return await res.json();
+    } catch (e) {
+      return null;
     }
   }
 
@@ -274,48 +345,35 @@
     grid.style.display = 'grid';
     grid.innerHTML = '<div class="status-msg">⚡ Memuat data Filmbox...</div>';
 
-    if (act === 'trending') {
-      document.getElementById('sectionTitle').innerText = '🔥 DRAMA TRENDING';
-    } else {
-      document.getElementById('sectionTitle').innerText = '🔥 DRAMA TERBARU';
-    }
+    if (act === 'trending') document.getElementById('sectionTitle').innerText = '🔥 DRAMA TRENDING';
+    else document.getElementById('sectionTitle').innerText = '🔥 DRAMA TERBARU';
 
     let directUrl = `https://indocast.site/api/filmbox/home`;
     if (act === 'trending') directUrl = `https://indocast.site/api/filmbox/trending?page=0&perPage=18`;
 
     const items = await fetchWithFallback(`/api/drama?action=${act}`, directUrl);
-    
-    if (!items || items.length === 0) {
-      grid.innerHTML = `
-        <div class="status-msg">
-          ⚠️ Gagal memuat drama Filmbox.<br>
-          <button class="btn-retry" onclick="loadDrama('${act}')">🔄 Coba Lagi</button>
-        </div>`;
-      return;
-    }
-
     renderGrid(items, 'drama');
   }
 
-  // RENDER GRID
+  // RENDER GRID KATALOG
   function renderGrid(items, mode) {
     const grid = document.getElementById('catalogGrid');
     grid.style.display = 'grid';
     if (!items || items.length === 0) {
-      grid.innerHTML = '<div class="status-msg">Data tidak ditemukan.</div>';
+      grid.innerHTML = '<div class="status-msg">Data tidak ditemukan.<br><button class="btn-retry" onclick="location.reload()">🔄 Muat Ulang</button></div>';
       return;
     }
 
     grid.innerHTML = '';
     items.forEach(item => {
-      const title = item.title || item.name || item.caption || item.subjectName || 'Tanpa Judul';
+      const title = item.title || item.name || item.caption || item.subjectName || item.bookName || 'Tanpa Judul';
       const poster = getPoster(item);
       const card = document.createElement('div');
       card.className = 'card';
 
       card.innerHTML = `
         <div class="poster-box">
-          <img src="${poster}" alt="${title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x400/21262d/00a8e8?text=No+Cover';" />
+          <img src="${poster}" alt="${title}" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='https://via.placeholder.com/300x400/21262d/00a8e8?text=No+Cover';" />
         </div>
         <div class="card-title">${title}</div>
       `;
@@ -324,8 +382,8 @@
         const path = item.path || item.slug || item.id || '';
         card.onclick = () => openAnimeDetail(path, title);
       } else {
-        const detailPath = item.detailPath || item.slug || '';
-        const id = item.id || item.subjectId || '';
+        const detailPath = item.detailPath || item.domainPath || item.path || item.slug || item.detail_path || '';
+        const id = item.id || item.subjectId || item.subject_id || item.idStr || '';
         card.onclick = () => openDramaDetail(detailPath, id, title);
       }
 
@@ -345,31 +403,32 @@
     epGrid.innerHTML = 'Memuat episode...';
     epSelect.innerHTML = '<option value="">Pilih Episode...</option>';
 
-    try {
-      const res = await fetch(`/api/anime?action=detail&path=${encodeURIComponent(path)}`);
-      const json = await res.json();
-      const data = json.data || json;
-      const epList = data.episode_list || data.episodes || [];
+    let directUrl = `https://indocast.site/api/animekompi/detail?path=${encodeURIComponent(path)}`;
+    let data = await fetchWithFallbackSingle(`/api/anime?action=detail&path=${encodeURIComponent(path)}`, directUrl);
+    let epList = [];
+    if (data) {
+      let d = data.data || data;
+      epList = d.episode_list || d.episodes || [];
+    }
 
-      epGrid.innerHTML = '';
-      if (epList && epList.length > 0) {
-        epList.forEach((ep, i) => {
-          const epId = ep.episode_id || ep.id || ep.path;
-          const epTitle = ep.title || `Eps ${i + 1}`;
+    epGrid.innerHTML = '';
+    if (epList && epList.length > 0) {
+      epList.forEach((ep, i) => {
+        const epId = ep.episode_id || ep.id || ep.path;
+        const epTitle = ep.title || `Eps ${i + 1}`;
 
-          const opt = document.createElement('option');
-          opt.value = epId; opt.textContent = epTitle;
-          epSelect.appendChild(opt);
+        const opt = document.createElement('option');
+        opt.value = epId; opt.textContent = epTitle;
+        epSelect.appendChild(opt);
 
-          const btn = document.createElement('button');
-          btn.className = 'ep-btn';
-          btn.innerText = `Eps ${i + 1}`;
-          btn.onclick = () => playAnimeEp(epId);
-          epGrid.appendChild(btn);
-        });
-        playAnimeEp(epList[0].episode_id || epList[0].id || epList[0].path);
-      }
-    } catch(e) {}
+        const btn = document.createElement('button');
+        btn.className = 'ep-btn';
+        btn.innerText = `Eps ${i + 1}`;
+        btn.onclick = () => playAnimeEp(epId);
+        epGrid.appendChild(btn);
+      });
+      playAnimeEp(epList[0].episode_id || epList[0].id || epList[0].path);
+    }
   }
 
   async function playAnimeEp(epId) {
@@ -378,19 +437,16 @@
     loader.style.display = 'flex';
     iframe.src = 'about:blank';
 
-    try {
-      const res = await fetch(`/api/anime?action=play&episode_id=${encodeURIComponent(epId)}`);
-      const json = await res.json();
-      const data = json.data || json;
-      const streamUrl = data.url || data.playUrl || data.stream || data.embed || '';
+    let directUrl = `https://indocast.site/api/animekompi/play?episode_id=${encodeURIComponent(epId)}`;
+    let json = await fetchWithFallbackSingle(`/api/anime?action=play&episode_id=${encodeURIComponent(epId)}`, directUrl);
+    let streamUrl = findStreamUrl(json);
 
-      if (streamUrl) iframe.src = streamUrl;
-      else alert('Link video tidak ditemukan.');
-    } catch(e) {}
+    if (streamUrl) iframe.src = streamUrl;
+    else alert('Link video stream tidak ditemukan.');
     loader.style.display = 'none';
   }
 
-  // DETAIL DRAMA
+  // DETAIL DRAMA (FIX 0-INDEX EPISODE & PLAYBACK)
   async function openDramaDetail(detailPath, id, title) {
     currentDramaPath = detailPath;
     currentDramaId = id;
@@ -399,28 +455,39 @@
     document.getElementById('animeTitle').innerText = title;
 
     const epGrid = document.getElementById('epGrid');
+    const epSelect = document.getElementById('selectEp');
     epGrid.innerHTML = 'Memuat episode...';
+    epSelect.innerHTML = '<option value="">Pilih Episode...</option>';
 
-    try {
-      const res = await fetch(`/api/drama?action=details&detailPath=${encodeURIComponent(detailPath)}&id=${id}`);
-      const json = await res.json();
-      const data = json.data || json;
-      const epList = data.episodes || data.chapterList || [];
+    let directUrl = `https://indocast.site/api/filmbox/details?detailPath=${encodeURIComponent(detailPath)}&id=${id}`;
+    let data = await fetchWithFallbackSingle(`/api/drama?action=details&detailPath=${encodeURIComponent(detailPath)}&id=${id}`, directUrl);
+    
+    let epList = [];
+    if (data) {
+      let d = data.data || data;
+      epList = d.episodes || d.chapterList || d.resourceList || d.itemList || d.seasons || [];
+    }
 
-      epGrid.innerHTML = '';
-      if (epList && epList.length > 0) {
-        epList.forEach((ep, i) => {
-          const btn = document.createElement('button');
-          btn.className = 'ep-btn';
-          btn.innerText = `Eps ${i + 1}`;
-          btn.onclick = () => playDramaEp(i + 1);
-          epGrid.appendChild(btn);
-        });
-        playDramaEp(1);
-      } else {
-        playDramaEp(0);
-      }
-    } catch(e) {
+    epGrid.innerHTML = '';
+    if (Array.isArray(epList) && epList.length > 0) {
+      epList.forEach((ep, i) => {
+        const opt = document.createElement('option');
+        opt.value = i; opt.textContent = `Eps ${i + 1}`;
+        epSelect.appendChild(opt);
+
+        const btn = document.createElement('button');
+        btn.className = 'ep-btn';
+        btn.innerText = `Eps ${i + 1}`;
+        btn.onclick = () => playDramaEp(i);
+        epGrid.appendChild(btn);
+      });
+      playDramaEp(0);
+    } else {
+      const btn = document.createElement('button');
+      btn.className = 'ep-btn active';
+      btn.innerText = 'Eps 1';
+      btn.onclick = () => playDramaEp(0);
+      epGrid.appendChild(btn);
       playDramaEp(0);
     }
   }
@@ -431,15 +498,22 @@
     loader.style.display = 'flex';
     iframe.src = 'about:blank';
 
-    try {
-      const res = await fetch(`/api/drama?action=getplay&subjectId=${currentDramaId}&detailPath=${encodeURIComponent(currentDramaPath)}&se=0&ep=${epNum}`);
-      const json = await res.json();
-      const data = json.data || json;
-      const streamUrl = data.playUrl || data.url || data.embed || '';
+    let backendUrl = `/api/drama?action=getplay&subjectId=${currentDramaId}&detailPath=${encodeURIComponent(currentDramaPath)}&se=0&ep=${epNum}`;
+    let directUrl = `https://indocast.site/api/filmbox/getplay?subjectId=${currentDramaId}&detailPath=${encodeURIComponent(currentDramaPath)}&se=0&ep=${epNum}&lang=in_id`;
 
-      if (streamUrl) iframe.src = streamUrl;
-      else alert('Link video stream tidak ditemukan.');
-    } catch(e) {}
+    let json = await fetchWithFallbackSingle(backendUrl, directUrl);
+    let streamUrl = findStreamUrl(json);
+
+    // Fallback jika index 0 mencoba index 1
+    if (!streamUrl && epNum === 0) {
+      let fbBackend = `/api/drama?action=getplay&subjectId=${currentDramaId}&detailPath=${encodeURIComponent(currentDramaPath)}&se=0&ep=1`;
+      let fbDirect = `https://indocast.site/api/filmbox/getplay?subjectId=${currentDramaId}&detailPath=${encodeURIComponent(currentDramaPath)}&se=0&ep=1&lang=in_id`;
+      let json2 = await fetchWithFallbackSingle(fbBackend, fbDirect);
+      streamUrl = findStreamUrl(json2);
+    }
+
+    if (streamUrl) iframe.src = streamUrl;
+    else alert('Link video stream tidak ditemukan untuk episode ini.');
     loader.style.display = 'none';
   }
 
