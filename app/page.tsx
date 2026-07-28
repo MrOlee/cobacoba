@@ -8,9 +8,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [catalogView, setCatalogView] = useState(true);
   const [playerData, setPlayerData] = useState<{ title: string; episodes: any[]; path: string; id: string } | null>(null);
-  const [currentEp, setCurrentEp] = useState('');
 
-  // Fungsi ekstraktor (sama seperti sebelumnya)
+  // Ekstraktor
   const extractTitle = (item: any) => item?.title || item?.name || item?.caption || 'No Title';
   const extractPoster = (item: any) => {
     const candidates = ['cover_url', 'cover', 'poster', 'coverUrl', 'image', 'img', 'thumb'];
@@ -26,6 +25,7 @@ export default function HomePage() {
   const extractPath = (item: any) => item?.path || item?.slug || item?.detailPath || '';
   const extractId = (item: any) => item?.id || item?.subjectId || item?.subject_id || '';
 
+  // Fetch Anime
   const fetchAnime = async (action: string, params: Record<string, string> = {}) => {
     setLoading(true);
     try {
@@ -34,7 +34,7 @@ export default function HomePage() {
       const json = await res.json();
       if (json.success) {
         let data = json.data;
-        let rawItems = [];
+        let rawItems: any[] = [];
         if (Array.isArray(data)) rawItems = data;
         else if (data?.data) rawItems = Array.isArray(data.data) ? data.data : [];
         else if (data?.list) rawItems = data.list;
@@ -46,6 +46,7 @@ export default function HomePage() {
     setLoading(false);
   };
 
+  // Fetch Drama
   const fetchDrama = async (action: string, params: Record<string, string> = {}) => {
     setLoading(true);
     try {
@@ -54,7 +55,7 @@ export default function HomePage() {
       const json = await res.json();
       if (json.success) {
         let data = json.data;
-        let rawItems = [];
+        let rawItems: any[] = [];
         if (Array.isArray(data)) rawItems = data;
         else if (data?.data) rawItems = Array.isArray(data.data) ? data.data : [];
         else if (data?.list) rawItems = data.list;
@@ -85,6 +86,7 @@ export default function HomePage() {
     }
   };
 
+  // Open Anime Detail
   const openAnimeDetail = async (path: string, title: string) => {
     setCatalogView(false);
     setPlayerData({ title, episodes: [], path, id: '' });
@@ -93,7 +95,7 @@ export default function HomePage() {
       const json = await res.json();
       if (json.success) {
         const data = json.data;
-        let eps = [];
+        let eps: any[] = [];
         if (data?.episode_list) eps = data.episode_list;
         else if (data?.episodes) eps = data.episodes;
         else if (Array.isArray(data)) eps = data;
@@ -106,21 +108,23 @@ export default function HomePage() {
     } catch (e) { console.error(e); }
   };
 
+  // Play Anime Episode
   const playAnime = async (epId: string) => {
-    setCurrentEp(epId);
+    const iframe = document.getElementById('playerIframe') as HTMLIFrameElement | null;
+    if (!iframe) return;
+    iframe.src = 'about:blank';
+
     try {
       const res = await fetch(`/api/anime?action=play&episode_id=${encodeURIComponent(epId)}`);
       const json = await res.json();
       if (json.success) {
         const stream = findStreamUrl(json.data);
-        if (stream) {
-          const iframe = document.getElementById('playerIframe') as HTMLIFrameElement;
-          if (iframe) iframe.src = stream;
-        }
+        if (stream) iframe.src = stream;
       }
     } catch (e) { console.error(e); }
   };
 
+  // Open Drama Detail
   const openDramaDetail = async (path: string, id: string, title: string) => {
     setCatalogView(false);
     setPlayerData({ title, episodes: [], path, id });
@@ -129,45 +133,51 @@ export default function HomePage() {
       const json = await res.json();
       if (json.success) {
         const data = json.data;
-        let eps = [];
+        let eps: any[] = [];
         if (data?.episodes) eps = data.episodes;
         else if (data?.chapterList) eps = data.chapterList;
         else if (data?.resourceList) eps = data.resourceList;
         else if (Array.isArray(data)) eps = data;
         setPlayerData(prev => ({ ...prev!, episodes: eps }));
+        // Putar episode pertama atau coba langsung
         if (eps.length > 0) {
           playDrama(path, id, 0);
         } else {
-          playDrama(path, id, 0); // coba langsung
+          playDrama(path, id, 0);
         }
       }
     } catch (e) { console.error(e); }
   };
 
+  // Play Drama Episode
   const playDrama = async (path: string, id: string, epIndex: number) => {
+    const iframe = document.getElementById('playerIframe') as HTMLIFrameElement | null;
+    if (!iframe) return;
+    iframe.src = 'about:blank';
+
     try {
       const res = await fetch(`/api/drama?action=getplay&detailPath=${encodeURIComponent(path)}&id=${id}&se=0&ep=${epIndex}`);
       const json = await res.json();
       if (json.success) {
         const stream = findStreamUrl(json.data);
         if (stream) {
-          const iframe = document.getElementById('playerIframe') as HTMLIFrameElement;
-          if (iframe) iframe.src = stream;
-        } else {
-          // fallback ep=1
-          if (epIndex === 0) {
-            const res2 = await fetch(`/api/drama?action=getplay&detailPath=${encodeURIComponent(path)}&id=${id}&se=0&ep=1`);
-            const json2 = await res2.json();
-            if (json2.success) {
-              const stream2 = findStreamUrl(json2.data);
-              if (stream2 && iframe) iframe.src = stream2;
-            }
-          }
+          iframe.src = stream;
+          return;
+        }
+      }
+      // Fallback: coba ep=1 jika epIndex=0 gagal
+      if (epIndex === 0) {
+        const res2 = await fetch(`/api/drama?action=getplay&detailPath=${encodeURIComponent(path)}&id=${id}&se=0&ep=1`);
+        const json2 = await res2.json();
+        if (json2.success) {
+          const stream2 = findStreamUrl(json2.data);
+          if (stream2) iframe.src = stream2;
         }
       }
     } catch (e) { console.error(e); }
   };
 
+  // Find Stream URL (rekursif)
   const findStreamUrl = (obj: any): string | null => {
     if (!obj) return null;
     if (typeof obj === 'string') {
@@ -201,6 +211,7 @@ export default function HomePage() {
     return null;
   };
 
+  // Render items
   const renderItems = () => {
     if (loading) return <div className="loading">⏳ Memuat...</div>;
     if (!items || items.length === 0) return <div className="empty">Tidak ada data</div>;
@@ -233,11 +244,56 @@ export default function HomePage() {
       </div>
 
       <div style={{ padding: '12px 20px', background: '#141a24' }}>
-        <input id="searchInput" placeholder="🔍 Cari judul..." style={{ width: '100%', maxWidth: 500, display: 'block', margin: '0 auto', padding: '12px 20px', borderRadius: 25, border: '2px solid #2a2f3a', background: '#1a212c', color: '#e2e8f0', fontSize: 14, outline: 'none', textAlign: 'center' }} />
+        <input
+          id="searchInput"
+          placeholder="🔍 Cari judul..."
+          onKeyDown={async (e) => {
+            if (e.key === 'Enter') {
+              const q = (e.target as HTMLInputElement).value.trim();
+              if (q.length < 2) return alert('Minimal 2 karakter');
+              setLoading(true);
+              setCatalogView(true);
+              let allResults: any[] = [];
+              // Cari di anime
+              try {
+                const res = await fetch(`/api/anime?action=home&page=1`);
+                const json = await res.json();
+                if (json.success) {
+                  let data = json.data;
+                  let rawItems: any[] = [];
+                  if (Array.isArray(data)) rawItems = data;
+                  else if (data?.data) rawItems = Array.isArray(data.data) ? data.data : [];
+                  else if (data?.list) rawItems = data.list;
+                  else if (data?.items) rawItems = data.items;
+                  const filtered = rawItems.filter(item => extractTitle(item).toLowerCase().includes(q.toLowerCase()));
+                  allResults = allResults.concat(filtered);
+                }
+              } catch (e) {}
+              // Cari di drama
+              try {
+                const res = await fetch(`/api/drama?action=search&keyword=${encodeURIComponent(q)}&page=1&perPage=20`);
+                const json = await res.json();
+                if (json.success) {
+                  let data = json.data;
+                  let rawItems: any[] = [];
+                  if (Array.isArray(data)) rawItems = data;
+                  else if (data?.data) rawItems = Array.isArray(data.data) ? data.data : [];
+                  else if (data?.list) rawItems = data.list;
+                  else if (data?.items) rawItems = data.items;
+                  allResults = allResults.concat(rawItems);
+                }
+              } catch (e) {}
+              setItems(allResults);
+              setLoading(false);
+              if (allResults.length === 0) alert('Tidak ditemukan');
+            }
+          }}
+          style={{ width: '100%', maxWidth: 500, display: 'block', margin: '0 auto', padding: '12px 20px', borderRadius: 25, border: '2px solid #2a2f3a', background: '#1a212c', color: '#e2e8f0', fontSize: 14, outline: 'none', textAlign: 'center' }}
+        />
       </div>
 
       <div style={{ padding: '10px 20px', background: '#141a24', display: 'flex', gap: 8, overflowX: 'auto' }}>
-        {/* Subnav bisa ditambahkan nanti */}
+        {/* Subnav opsional */}
       </div>
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: 20 }}>
