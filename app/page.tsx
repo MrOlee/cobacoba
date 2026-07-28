@@ -1,18 +1,21 @@
-import { animeKompiAPI, filmboxAPI } from '@/lib/api';
+import { animeKompiAPI } from '@/lib/api';
 import Link from 'next/link';
 
 export default async function HomePage() {
   let animeList: any[] = [];
-  let filmboxHome: any = null;
 
   try {
-    const [kompiRes, filmboxRes] = await Promise.allSettled([
-      animeKompiAPI.getHome(1),
-      filmboxAPI.getHome(),
-    ]);
-
-    if (kompiRes.status === 'fulfilled') animeList = kompiRes.value?.data || kompiRes.value?.results || [];
-    if (filmboxRes.status === 'fulfilled') filmboxHome = filmboxRes.value?.data || filmboxRes.value;
+    const kompiRes = await animeKompiAPI.getHome(1);
+    
+    if (kompiRes) {
+      if (Array.isArray(kompiRes.data)) {
+        animeList = kompiRes.data;
+      } else if (Array.isArray(kompiRes.results)) {
+        animeList = kompiRes.results;
+      } else if (Array.isArray(kompiRes)) {
+        animeList = kompiRes;
+      }
+    }
   } catch (err) {
     console.error("Error loading home data", err);
   }
@@ -53,9 +56,9 @@ export default async function HomePage() {
         {animeList.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {animeList.map((item: any, idx: number) => {
-              const path = item.path || item.slug || item.id;
+              const path = item.path || item.slug || item.id || item.param;
               const title = item.title || item.name;
-              const image = item.thumbnail || item.cover || item.poster;
+              const image = item.thumbnail || item.cover || item.poster || item.image;
               const episode = item.episode || item.latest_episode;
 
               return (
@@ -78,7 +81,7 @@ export default async function HomePage() {
             })}
           </div>
         ) : (
-          <p className="text-gray-400 text-sm">Sedang memuat data anime...</p>
+          <p className="text-gray-400 text-sm">Gagal memuat daftar anime atau API sedang dalam pemeliharaan.</p>
         )}
       </section>
     </div>
