@@ -145,6 +145,7 @@ export default function HomePage() {
   };
 
   const playDrama = async (path: string, id: string, epIndex: number) => {
+    // Deklarasi iframe di awal fungsi
     const iframe = document.getElementById('playerIframe') as HTMLIFrameElement | null;
     if (!iframe) return;
     iframe.src = 'about:blank';
