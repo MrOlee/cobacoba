@@ -17,6 +17,9 @@ module.exports = async (req, res) => {
   else if (action === "detail") targetUrl = `https://indocast.site/api/animekompi/detail?path=${encodeURIComponent(path)}`;
   else if (action === "play") targetUrl = `https://indocast.site/api/animekompi/play?episode_id=${encodeURIComponent(episode_id)}`;
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 4500);
+
   try {
     const response = await fetch(targetUrl, {
       method: "GET",
@@ -24,8 +27,10 @@ module.exports = async (req, res) => {
         "Content-Type": "application/json",
         "x-api-key": apiKey,
         "User-Agent": "okhttp/4.12.0"
-      }
+      },
+      signal: controller.signal
     });
+    clearTimeout(timer);
     const text = await response.text();
     try {
       const data = JSON.parse(text);
@@ -34,6 +39,7 @@ module.exports = async (req, res) => {
       return res.status(200).json({ success: false, raw: text });
     }
   } catch (err) {
+    clearTimeout(timer);
     return res.status(200).json({ success: false, error: err.message });
   }
 };
