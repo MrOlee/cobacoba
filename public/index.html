@@ -14,39 +14,32 @@ header{background:#141a24;padding:20px;text-align:center;border-bottom:3px solid
 .nav{display:flex;background:#141a24;border-bottom:1px solid #2a2f3a}
 .nav button{flex:1;padding:12px;background:transparent;color:#6b7a8f;border:none;font-weight:700;font-size:13px;cursor:pointer;transition:.2s}
 .nav button.active{background:#00d4ff;color:#0a0e14}
-.nav button:hover{background:#1a212c}
 .search{padding:12px 20px;background:#141a24}
 .search input{width:100%;max-width:500px;display:block;margin:0 auto;padding:12px 20px;border-radius:25px;border:2px solid #2a2f3a;background:#1a212c;color:#e2e8f0;font-size:14px;outline:none;text-align:center}
 .search input:focus{border-color:#00d4ff}
-.search input::placeholder{color:#6b7a8f}
-.subnav{padding:10px 20px;background:#141a24;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid #1a212c}
+.subnav{padding:10px 20px;background:#141a24;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
 .subnav::-webkit-scrollbar{display:none}
-.subnav button{padding:6px 16px;background:#1a212c;color:#8b9bb5;border:1px solid #2a2f3a;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.2s}
-.subnav button:hover{background:#2a2f3a}
-.subnav button.active{background:#00d4ff;color:#0a0e14;border-color:#00d4ff}
+.subnav button{padding:6px 16px;background:#1a212c;color:#8b9bb5;border:1px solid #2a2f3a;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.subnav button.active{background:#00d4ff;color:#0a0e14}
 #app{max-width:1200px;margin:0 auto;padding:20px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}
-.card{background:#141a24;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #1a212c;transition:transform .2s,border-color .2s}
+.card{background:#141a24;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #1a212c;transition:transform .2s}
 .card:hover{transform:translateY(-4px);border-color:#00d4ff}
 .card .poster{width:100%;aspect-ratio:3/4;background:#1a212c;object-fit:cover;display:block}
-.card .title{padding:10px 12px;font-size:13px;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:38px;color:#e2e8f0;line-height:1.3}
-.card .year{padding:0 12px 10px;font-size:11px;color:#6b7a8f}
-#player{display:none;animation:fadeIn .3s}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-#backBtn{padding:8px 20px;background:#1a212c;color:#e2e8f0;border:1px solid #2a2f3a;border-radius:6px;font-weight:700;cursor:pointer;margin-bottom:16px;transition:.2s}
-#backBtn:hover{background:#2a2f3a}
+.card .title{padding:10px 12px;font-size:13px;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:38px}
+.loading{text-align:center;padding:60px 20px;color:#6b7a8f;grid-column:1/-1}
+.empty{text-align:center;padding:60px 20px;color:#6b7a8f;grid-column:1/-1}
+.empty button{margin-top:12px;padding:8px 20px;background:#00d4ff;color:#0a0e14;border:none;border-radius:6px;font-weight:700;cursor:pointer}
+#player{display:none}
+#backBtn{padding:8px 20px;background:#1a212c;color:#e2e8f0;border:1px solid #2a2f3a;border-radius:6px;font-weight:700;cursor:pointer;margin-bottom:16px}
 #playerTitle{font-size:24px;color:#00d4ff;margin-bottom:16px}
 .video-wrap{width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;margin-bottom:16px}
 .video-wrap iframe{width:100%;height:100%;border:none}
 .ep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:8px;margin-top:12px}
-.ep-grid button{padding:10px 4px;background:#1a212c;color:#8b9bb5;border:1px solid #2a2f3a;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;transition:.2s}
-.ep-grid button.active,.ep-grid button:hover{background:#00d4ff;color:#0a0e14;border-color:#00d4ff}
-.loading{text-align:center;padding:60px 20px;color:#6b7a8f;grid-column:1/-1;font-size:14px}
-.loading::after{content:'...';animation:dots 1s steps(4) infinite}
-@keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
-.empty{text-align:center;padding:60px 20px;color:#6b7a8f;grid-column:1/-1}
-.empty button{margin-top:12px;padding:8px 20px;background:#00d4ff;color:#0a0e14;border:none;border-radius:6px;font-weight:700;cursor:pointer}
-@media(max-width:480px){.grid{grid-template-columns:repeat(2,1fr);gap:10px}.logo{font-size:22px}}
+.ep-grid button{padding:10px;background:#1a212c;color:#8b9bb5;border:1px solid #2a2f3a;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer}
+.ep-grid button.active,.ep-grid button:hover{background:#00d4ff;color:#0a0e14}
+.debug-box{background:#1a212c;border:1px solid #2a2f3a;border-radius:8px;padding:12px;margin:12px 0;font-size:11px;color:#8b9bb5;max-height:200px;overflow:auto;white-space:pre-wrap;font-family:monospace}
+@media(max-width:480px){.grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -62,12 +55,13 @@ header{background:#141a24;padding:20px;text-align:center;border-bottom:3px solid
 </div>
 
 <div class="search">
-  <input type="text" id="searchInput" placeholder="🔍 Cari judul anime atau drama...">
+  <input type="text" id="searchInput" placeholder="🔍 Cari judul...">
 </div>
 
 <div class="subnav" id="subNav"></div>
 
 <div id="app">
+  <div id="debugInfo" class="debug-box" style="display:none"></div>
   <div id="catalog" class="grid"></div>
   <div id="player">
     <button id="backBtn" onclick="showCatalog()">← KEMBALI</button>
@@ -81,110 +75,121 @@ header{background:#141a24;padding:20px;text-align:center;border-bottom:3px solid
 
 <script>
 // ============================================================
-// KONFIGURASI
+// DEBUG HELPER
 // ============================================================
-const API_BASE = '/api';
-
-// ============================================================
-// UTILITY - SMART FIELD EXTRACTOR
-// ============================================================
-function getField(obj, ...keys) {
-  if (!obj || typeof obj !== 'object') return null;
-  for (const key of keys) {
-    if (obj[key] !== undefined && obj[key] !== null && obj[key] !== '') {
-      return obj[key];
-    }
-  }
-  return null;
+function showDebug(label, data) {
+  const box = document.getElementById('debugInfo');
+  box.style.display = 'block';
+  box.innerHTML = `<strong>${label}</strong>\n${JSON.stringify(data, null, 2).slice(0, 2000)}`;
+  console.log(label, data);
 }
 
+// ============================================================
+// SMART EXTRACTOR - CEK SEMUA KEMUNGKINAN
+// ============================================================
 function extractTitle(item) {
-  return getField(item, 'title', 'name', 'caption', 'subjectName', 'bookName', 'titleName', 'animeTitle', 'dramaTitle', 'filmName', 'movieName', 'label', 'text') || 'No Title';
+  if (!item) return 'No Title';
+  if (typeof item === 'string') return item;
+  
+  const fields = [
+    'title', 'name', 'caption', 'subjectName', 'bookName', 'titleName',
+    'animeTitle', 'dramaTitle', 'filmName', 'movieName', 'label', 'text',
+    'judul', 'nama', 'displayName', 'fullName', 'subject_title',
+    'subject_name', 'title_display', 'name_display'
+  ];
+  
+  for (const f of fields) {
+    if (item[f] && typeof item[f] === 'string' && item[f].trim()) {
+      return item[f].trim();
+    }
+  }
+  
+  // Coba cari di object bersarang
+  for (const key of Object.keys(item)) {
+    if (typeof item[key] === 'object' && item[key] !== null) {
+      const result = extractTitle(item[key]);
+      if (result !== 'No Title') return result;
+    }
+  }
+  
+  return 'No Title';
 }
 
 function extractPoster(item) {
-  const poster = getField(item, 
+  if (!item) return '';
+  
+  const fields = [
     'cover', 'poster', 'coverUrl', 'verticalCover', 'cover_path', 'posterPath',
     'image', 'img', 'thumb', 'thumbnail', 'picture', 'avatar', 'icon',
-    'coverImage', 'posterImage', 'photo', 'imgUrl', 'imageUrl'
-  );
-  if (!poster) return '';
-  let url = String(poster);
-  if (url.startsWith('//')) return 'https:' + url;
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  if (url.startsWith('/')) return 'https://indocast.site' + url;
-  return url;
+    'coverImage', 'posterImage', 'photo', 'imgUrl', 'imageUrl',
+    'vertical_cover', 'horizontal_cover', 'cover_url', 'poster_url',
+    'subject_cover', 'subject_poster', 'cover_vertical', 'poster_vertical'
+  ];
+  
+  for (const f of fields) {
+    let val = item[f];
+    if (val) {
+      if (typeof val === 'string') {
+        let url = val.trim();
+        if (url.startsWith('//')) return 'https:' + url;
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        if (url.startsWith('/')) return 'https://indocast.site' + url;
+        return url;
+      }
+      if (typeof val === 'object' && val !== null) {
+        const nested = val.url || val.path || val.src || '';
+        if (nested && typeof nested === 'string') {
+          let url = nested.trim();
+          if (url.startsWith('//')) return 'https:' + url;
+          if (url.startsWith('http://') || url.startsWith('https://')) return url;
+          return url;
+        }
+      }
+    }
+  }
+  
+  return '';
 }
 
 function extractId(item) {
-  return getField(item, 'id', 'subjectId', 'subject_id', 'itemId', 'episode_id', 'slug', 'path') || '';
+  if (!item) return '';
+  const fields = ['id', 'subjectId', 'subject_id', 'itemId', 'episode_id', 'slug', 'path', 'uid', 'uuid'];
+  for (const f of fields) {
+    if (item[f] && typeof item[f] === 'string') return item[f];
+    if (item[f] && typeof item[f] === 'number') return String(item[f]);
+  }
+  return '';
 }
 
 function extractPath(item) {
-  return getField(item, 'path', 'slug', 'detailPath', 'detail_path', 'domainPath', 'url', 'link') || '';
-}
-
-function extractYear(item) {
-  return getField(item, 'year', 'releaseYear', 'release_year', 'date', 'published', 'createdAt') || '';
-}
-
-// ============================================================
-// FIND STREAM URL - DEEP SEARCH
-// ============================================================
-function findStreamUrl(obj) {
-  if (!obj) return null;
-  
-  // String
-  if (typeof obj === 'string') {
-    const s = obj.trim();
-    if (s.startsWith('http://') || s.startsWith('https://') || s.startsWith('//')) {
-      if (s.includes('.m3u8') || s.includes('.mp4') || s.includes('stream') || s.includes('embed') || s.includes('play') || s.includes('video')) {
-        return s.startsWith('//') ? 'https:' + s : s;
-      }
-    }
-    return null;
+  if (!item) return '';
+  const fields = ['path', 'slug', 'detailPath', 'detail_path', 'domainPath', 'url', 'link', 'route', 'permalink'];
+  for (const f of fields) {
+    if (item[f] && typeof item[f] === 'string') return item[f];
   }
-  
-  // Array
-  if (Array.isArray(obj)) {
-    for (const item of obj) {
-      const result = findStreamUrl(item);
-      if (result) return result;
-    }
-    return null;
-  }
-  
-  // Object
-  if (typeof obj === 'object') {
-    const priorityKeys = ['playUrl', 'url', 'mediaUrl', 'play_url', 'videoUrl', 'stream', 'hls', 'm3u8', 'link', 'embedUrl', 'embed_url', 'embed', 'source', 'src', 'video', 'file', 'path'];
-    
-    for (const key of priorityKeys) {
-      if (obj[key] !== undefined && obj[key] !== null) {
-        const result = findStreamUrl(obj[key]);
-        if (result) return result;
-      }
-    }
-    
-    for (const key of Object.keys(obj)) {
-      const result = findStreamUrl(obj[key]);
-      if (result) return result;
-    }
-  }
-  
-  return null;
+  return '';
 }
 
 // ============================================================
-// EXTRACT ITEMS FROM ANY API RESPONSE
+// EXTRACT ITEMS - DENGAN LOGGING
 // ============================================================
-function extractItems(data) {
-  if (!data) return [];
+function extractItems(data, debugLabel = '') {
+  if (!data) {
+    console.log('extractItems: data null');
+    return [];
+  }
+  
+  console.log(`extractItems [${debugLabel}]:`, data);
+  showDebug(`RAW DATA [${debugLabel}]`, data);
   
   // Jika langsung array
-  if (Array.isArray(data)) return data;
+  if (Array.isArray(data)) {
+    console.log('extractItems: langsung array, length:', data.length);
+    return data;
+  }
   
-  // Cari di berbagai level
-  const searchPaths = [
+  // Coba di berbagai path
+  const paths = [
     'data',
     'data.data',
     'data.list',
@@ -198,59 +203,96 @@ function extractItems(data) {
     'data.cardList',
     'data.animeList',
     'data.dramaList',
+    'data.content',
+    'data.contents',
     'list',
     'items',
     'records',
     'results',
     'subjectList',
-    'subject_list'
+    'subject_list',
+    'searchResultList',
+    'bannerList',
+    'cardList',
+    'animeList',
+    'dramaList',
+    'content',
+    'contents'
   ];
   
-  for (const path of searchPaths) {
+  for (const path of paths) {
     const parts = path.split('.');
     let current = data;
+    let found = true;
     for (const part of parts) {
       if (current && typeof current === 'object' && current[part] !== undefined) {
         current = current[part];
       } else {
-        current = null;
+        found = false;
         break;
       }
     }
-    if (Array.isArray(current) && current.length > 0) {
+    if (found && Array.isArray(current) && current.length > 0) {
+      console.log(`extractItems: ditemukan di path "${path}", length:`, current.length);
+      showDebug(`ITEMS dari path "${path}"`, current.slice(0, 3));
       return current;
     }
   }
   
-  // Coba cari array apapun di object
-  if (typeof data === 'object') {
-    for (const key of Object.keys(data)) {
-      if (Array.isArray(data[key]) && data[key].length > 0) {
-        // Cek apakah isinya object dengan title
-        if (data[key].some(item => item && typeof item === 'object' && (item.title || item.name || item.caption))) {
-          return data[key];
-        }
+  // Cari array apapun
+  for (const key of Object.keys(data)) {
+    if (Array.isArray(data[key]) && data[key].length > 0) {
+      const first = data[key][0];
+      if (first && typeof first === 'object') {
+        console.log(`extractItems: ditemukan array di key "${key}", length:`, data[key].length);
+        showDebug(`ITEMS dari key "${key}"`, data[key].slice(0, 3));
+        return data[key];
       }
     }
   }
   
+  console.log('extractItems: TIDAK ADA ITEM DITEMUKAN');
   return [];
 }
 
 // ============================================================
-// NORMALIZE ITEM
+// FIND STREAM URL
 // ============================================================
-function normalizeItem(item) {
-  if (!item || typeof item !== 'object') return null;
+function findStreamUrl(obj) {
+  if (!obj) return null;
   
-  return {
-    id: extractId(item),
-    title: extractTitle(item),
-    poster: extractPoster(item),
-    path: extractPath(item),
-    year: extractYear(item),
-    raw: item
-  };
+  if (typeof obj === 'string') {
+    const s = obj.trim();
+    if ((s.startsWith('http://') || s.startsWith('https://') || s.startsWith('//')) &&
+        (s.includes('.m3u8') || s.includes('.mp4') || s.includes('stream') || s.includes('embed') || s.includes('play') || s.includes('video'))) {
+      return s.startsWith('//') ? 'https:' + s : s;
+    }
+    return null;
+  }
+  
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      const result = findStreamUrl(item);
+      if (result) return result;
+    }
+    return null;
+  }
+  
+  if (typeof obj === 'object') {
+    const priority = ['playUrl', 'url', 'mediaUrl', 'play_url', 'videoUrl', 'stream', 'hls', 'm3u8', 'link', 'embedUrl', 'embed_url', 'embed', 'source', 'src', 'video', 'file'];
+    for (const key of priority) {
+      if (obj[key] !== undefined && obj[key] !== null) {
+        const result = findStreamUrl(obj[key]);
+        if (result) return result;
+      }
+    }
+    for (const key of Object.keys(obj)) {
+      const result = findStreamUrl(obj[key]);
+      if (result) return result;
+    }
+  }
+  
+  return null;
 }
 
 // ============================================================
@@ -258,13 +300,17 @@ function normalizeItem(item) {
 // ============================================================
 async function callAPI(endpoint, params = {}) {
   const qs = new URLSearchParams(params);
-  const url = `${API_BASE}${endpoint}?${qs}`;
+  const url = `${'/api'}${endpoint}?${qs}`;
+  console.log('API Call:', url);
   
   try {
     const res = await fetch(url);
     const data = await res.json();
+    console.log('API Response:', data);
+    showDebug('API RESPONSE', data);
     return data;
   } catch (e) {
+    console.error('API Error:', e);
     return { success: false, error: e.message };
   }
 }
@@ -274,17 +320,15 @@ async function callAPI(endpoint, params = {}) {
 // ============================================================
 let currentCategory = 'anime';
 let currentItems = [];
-let currentType = 'anime';
 
 // ============================================================
 // NAVIGATION
 // ============================================================
 document.querySelectorAll('.nav button').forEach(btn => {
   btn.addEventListener('click', function() {
-    const cat = this.dataset.cat;
     document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
     this.classList.add('active');
-    switchCategory(cat);
+    switchCategory(this.dataset.cat);
   });
 });
 
@@ -292,12 +336,8 @@ function switchCategory(cat) {
   currentCategory = cat;
   showCatalog();
   renderSubNav(cat);
-  
-  if (cat === 'anime') {
-    loadAnime('home');
-  } else {
-    loadDrama('home');
-  }
+  if (cat === 'anime') loadAnime('home');
+  else loadDrama('home');
 }
 
 function renderSubNav(cat) {
@@ -315,17 +355,13 @@ function renderSubNav(cat) {
       <button data-action="trending">🔥 Trending</button>
     `;
   }
-  
   nav.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', function() {
       nav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
       this.classList.add('active');
       const action = this.dataset.action;
-      if (cat === 'anime') {
-        loadAnime(action);
-      } else {
-        loadDrama(action);
-      }
+      if (cat === 'anime') loadAnime(action);
+      else loadDrama(action);
     });
   });
 }
@@ -333,31 +369,46 @@ function renderSubNav(cat) {
 // ============================================================
 // LOAD ANIME
 // ============================================================
-async function loadAnime(action, extraParams = {}) {
+async function loadAnime(action, extra = {}) {
   const grid = document.getElementById('catalog');
-  grid.innerHTML = '<div class="loading">⏳ Memuat anime</div>';
+  grid.innerHTML = '<div class="loading">⏳ Memuat anime...</div>';
   
-  let params = { action, ...extraParams };
+  let params = { action, ...extra };
   if (action === 'home') params.page = '1';
   if (action === 'genredetail') {
-    const genre = prompt('Masukkan genre anime:') || 'romance';
-    params.genre = genre;
+    const g = prompt('Masukkan genre:') || 'romance';
+    params.genre = g;
     params.page = '1';
   }
   
-  const data = await callAPI('/anime', params);
+  const result = await callAPI('/anime', params);
+  
+  // Tampilkan debug
+  showDebug('ANIME RESULT', result);
+  
+  if (!result.success) {
+    grid.innerHTML = `<div class="empty">Error: ${result.error || 'Unknown'}<br><button onclick="loadAnime('home')">Coba Lagi</button></div>`;
+    return;
+  }
   
   // Handle genres
   if (action === 'genres') {
-    const rawItems = extractItems(data);
-    const genres = rawItems.map(g => g.name || g.title || g).filter(Boolean);
+    const raw = extractItems(result.data || result, 'genres');
+    const genres = raw.map(g => {
+      if (typeof g === 'string') return g;
+      return g.name || g.title || g.genre || g.label || '';
+    }).filter(Boolean);
+    
+    if (genres.length === 0) {
+      grid.innerHTML = `<div class="empty">Tidak ada genre ditemukan</div>`;
+      return;
+    }
+    
     grid.innerHTML = `
       <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;padding:20px 0;justify-content:center">
         ${genres.map(g => `
           <button onclick="loadAnime('genredetail',{genre:'${encodeURIComponent(g)}'})" 
-                  style="padding:10px 20px;background:#1a212c;color:#e2e8f0;border:1px solid #2a2f3a;border-radius:25px;cursor:pointer;font-weight:700;font-size:14px;transition:.2s"
-                  onmouseover="this.style.background='#00d4ff';this.style.color='#0a0e14'"
-                  onmouseout="this.style.background='#1a212c';this.style.color='#e2e8f0'">
+                  style="padding:10px 20px;background:#1a212c;color:#e2e8f0;border:1px solid #2a2f3a;border-radius:25px;cursor:pointer;font-weight:700;font-size:14px">
             ${g}
           </button>
         `).join('')}
@@ -366,7 +417,9 @@ async function loadAnime(action, extraParams = {}) {
     return;
   }
   
-  renderCatalog(data, 'anime');
+  // Extract items
+  const rawItems = extractItems(result.data || result, 'anime');
+  renderItems(rawItems);
 }
 
 // ============================================================
@@ -374,7 +427,7 @@ async function loadAnime(action, extraParams = {}) {
 // ============================================================
 async function loadDrama(action) {
   const grid = document.getElementById('catalog');
-  grid.innerHTML = '<div class="loading">⏳ Memuat drama</div>';
+  grid.innerHTML = '<div class="loading">⏳ Memuat drama...</div>';
   
   let params = { action };
   if (action === 'trending') {
@@ -382,18 +435,24 @@ async function loadDrama(action) {
     params.perPage = '18';
   }
   
-  const data = await callAPI('/drama', params);
-  renderCatalog(data, 'drama');
+  const result = await callAPI('/drama', params);
+  
+  showDebug('DRAMA RESULT', result);
+  
+  if (!result.success) {
+    grid.innerHTML = `<div class="empty">Error: ${result.error || 'Unknown'}<br><button onclick="loadDrama('home')">Coba Lagi</button></div>`;
+    return;
+  }
+  
+  const rawItems = extractItems(result.data || result, 'drama');
+  renderItems(rawItems);
 }
 
 // ============================================================
-// RENDER CATALOG
+// RENDER ITEMS - DENGAN DEBUG FIELD
 // ============================================================
-function renderCatalog(data, type) {
+function renderItems(rawItems) {
   const grid = document.getElementById('catalog');
-  
-  // Extract items
-  const rawItems = extractItems(data);
   
   if (!rawItems || rawItems.length === 0) {
     grid.innerHTML = `
@@ -401,20 +460,40 @@ function renderCatalog(data, type) {
         Tidak ada data ditemukan
         <br><br>
         <button onclick="location.reload()">🔄 Refresh</button>
+        <br><br>
+        <div class="debug-box" style="display:block;text-align:left;max-height:300px;overflow:auto">
+          Cek console untuk detail (F12)
+        </div>
       </div>
     `;
     return;
   }
   
-  // Normalize
-  currentItems = rawItems.map(item => normalizeItem(item)).filter(Boolean);
-  currentType = type || 'anime';
+  // Normalize semua item
+  currentItems = rawItems.map(item => {
+    const normalized = {
+      title: extractTitle(item),
+      poster: extractPoster(item),
+      id: extractId(item),
+      path: extractPath(item),
+      raw: item
+    };
+    console.log('Normalized item:', normalized);
+    return normalized;
+  }).filter(item => item.title !== 'No Title');
   
   if (currentItems.length === 0) {
+    // Tampilkan sample raw untuk debugging
+    const sample = rawItems.slice(0, 3);
     grid.innerHTML = `
       <div class="empty">
-        Gagal memproses data
+        Gagal mengekstrak data. Lihat console untuk detail.
         <br><br>
+        <div class="debug-box" style="display:block;text-align:left;max-height:300px;overflow:auto;background:#0a0e14;padding:10px;border-radius:6px;font-size:11px">
+          Sample RAW data:<br>
+          ${JSON.stringify(sample, null, 2).slice(0, 1000)}
+        </div>
+        <br>
         <button onclick="location.reload()">🔄 Refresh</button>
       </div>
     `;
@@ -426,13 +505,12 @@ function renderCatalog(data, type) {
     const posterHtml = item.poster 
       ? `<img class="poster" src="${item.poster}" alt="${item.title}" loading="lazy" 
             onerror="this.src='https://via.placeholder.com/300x400/1a212c/00d4ff?text=No+Cover'">`
-      : `<div class="poster" style="display:flex;align-items:center;justify-content:center;background:#1a212c;color:#6b7a8f;font-size:14px;text-align:center;padding:20px">No Cover</div>`;
+      : `<div class="poster" style="display:flex;align-items:center;justify-content:center;background:#1a212c;color:#6b7a8f;font-size:12px;text-align:center;padding:20px">No Cover</div>`;
     
     return `
       <div class="card" data-index="${index}">
         ${posterHtml}
         <div class="title">${item.title}</div>
-        ${item.year ? `<div class="year">${item.year}</div>` : ''}
       </div>
     `;
   }).join('');
@@ -440,26 +518,20 @@ function renderCatalog(data, type) {
   // Click handler
   grid.querySelectorAll('.card').forEach(card => {
     card.addEventListener('click', function() {
-      const index = parseInt(this.dataset.index);
-      const item = currentItems[index];
+      const idx = parseInt(this.dataset.index);
+      const item = currentItems[idx];
       if (!item) return;
       
-      if (currentType === 'anime' || currentCategory === 'anime') {
-        if (item.path) {
-          openAnimeDetail(item.path, item.title);
-        } else if (item.id) {
-          openAnimeDetail(item.id, item.title);
-        } else {
-          alert('Path tidak ditemukan untuk anime ini');
-        }
+      const path = item.path || item.id;
+      const id = item.id || item.path;
+      
+      if (currentCategory === 'anime' && path) {
+        openAnimeDetail(path, item.title);
+      } else if (currentCategory === 'drama' && path && id) {
+        openDramaDetail(path, id, item.title);
       } else {
-        const path = item.path || item.id;
-        const id = item.id || item.path;
-        if (path && id) {
-          openDramaDetail(path, id, item.title);
-        } else {
-          alert('Data tidak lengkap untuk drama ini');
-        }
+        alert('Data tidak lengkap untuk membuka detail');
+        console.log('Item:', item);
       }
     });
   });
@@ -472,42 +544,34 @@ async function openAnimeDetail(path, title) {
   showPlayer();
   document.getElementById('playerTitle').textContent = title;
   const epList = document.getElementById('episodeList');
-  epList.innerHTML = '<div class="loading">⏳ Memuat episode</div>';
+  epList.innerHTML = '<div class="loading">⏳ Memuat episode...</div>';
   
-  const data = await callAPI('/anime', { action: 'detail', path });
+  const result = await callAPI('/anime', { action: 'detail', path });
+  showDebug('ANIME DETAIL', result);
   
   let episodes = [];
-  if (data && data.data) {
-    if (Array.isArray(data.data)) {
-      episodes = data.data;
-    } else {
-      episodes = data.data.episode_list || data.data.episodes || [];
-    }
+  if (result && result.data) {
+    const d = result.data;
+    if (Array.isArray(d)) episodes = d;
+    else episodes = d.episode_list || d.episodes || [];
   }
   
   if (!episodes || episodes.length === 0) {
-    epList.innerHTML = `
-      <div class="empty">
-        Tidak ada episode tersedia
-        <br><br>
-        <button onclick="showCatalog()">← Kembali</button>
-      </div>
-    `;
+    epList.innerHTML = `<div class="empty">Tidak ada episode<br><button onclick="showCatalog()">← Kembali</button></div>`;
     return;
   }
   
   epList.innerHTML = `
-    <h3 style="margin:16px 0 10px;color:#00d4ff;font-size:16px">📺 DAFTAR EPISODE</h3>
+    <h3 style="margin:16px 0 10px;color:#00d4ff">📺 DAFTAR EPISODE</h3>
     <div class="ep-grid">
       ${episodes.map((ep, i) => {
-        const epId = ep.episode_id || ep.id || ep.path || i;
-        const epTitle = ep.title || `Eps ${i+1}`;
-        return `<button data-id="${epId}" data-index="${i}">${epTitle}</button>`;
+        const eid = ep.episode_id || ep.id || ep.path || i;
+        const etitle = ep.title || `Eps ${i+1}`;
+        return `<button data-id="${eid}">${etitle}</button>`;
       }).join('')}
     </div>
   `;
   
-  // Episode click
   epList.querySelectorAll('.ep-grid button').forEach(btn => {
     btn.addEventListener('click', function() {
       epList.querySelectorAll('.ep-grid button').forEach(b => b.classList.remove('active'));
@@ -516,13 +580,13 @@ async function openAnimeDetail(path, title) {
     });
   });
   
-  // Play first episode
-  const firstEp = episodes[0];
-  const firstId = firstEp.episode_id || firstEp.id || firstEp.path || '';
-  if (firstId) {
+  // Play first
+  const first = episodes[0];
+  const fid = first.episode_id || first.id || first.path || '';
+  if (fid) {
     const firstBtn = epList.querySelector('.ep-grid button');
     if (firstBtn) firstBtn.classList.add('active');
-    playAnime(firstId);
+    playAnime(fid);
   }
 }
 
@@ -530,13 +594,14 @@ async function playAnime(epId) {
   const iframe = document.getElementById('playerIframe');
   iframe.src = 'about:blank';
   
-  const data = await callAPI('/anime', { action: 'play', episode_id: epId });
-  const stream = findStreamUrl(data);
+  const result = await callAPI('/anime', { action: 'play', episode_id: epId });
+  showDebug('ANIME PLAY', result);
   
+  const stream = findStreamUrl(result.data || result);
   if (stream) {
     iframe.src = stream;
   } else {
-    alert('Link streaming tidak ditemukan untuk episode ini');
+    alert('Link streaming tidak ditemukan');
   }
 }
 
@@ -547,38 +612,28 @@ async function openDramaDetail(path, id, title) {
   showPlayer();
   document.getElementById('playerTitle').textContent = title;
   const epList = document.getElementById('episodeList');
-  epList.innerHTML = '<div class="loading">⏳ Memuat episode</div>';
+  epList.innerHTML = '<div class="loading">⏳ Memuat episode...</div>';
   
-  const data = await callAPI('/drama', { action: 'details', detailPath: path, id });
+  const result = await callAPI('/drama', { action: 'details', detailPath: path, id });
+  showDebug('DRAMA DETAIL', result);
   
   let episodes = [];
-  if (data && data.data) {
-    if (Array.isArray(data.data)) {
-      episodes = data.data;
-    } else {
-      episodes = data.data.episodes || data.data.chapterList || data.data.resourceList || [];
-    }
+  if (result && result.data) {
+    const d = result.data;
+    if (Array.isArray(d)) episodes = d;
+    else episodes = d.episodes || d.chapterList || d.resourceList || [];
   }
   
   if (!episodes || episodes.length === 0) {
-    epList.innerHTML = `
-      <div class="empty">
-        Episode tidak tersedia
-        <br><br>
-        <button onclick="showCatalog()">← Kembali</button>
-      </div>
-    `;
-    // Coba play langsung
+    epList.innerHTML = `<div class="empty">Episode tidak tersedia<br><button onclick="showCatalog()">← Kembali</button></div>`;
     playDrama(path, id, 0);
     return;
   }
   
   epList.innerHTML = `
-    <h3 style="margin:16px 0 10px;color:#00d4ff;font-size:16px">📺 DAFTAR EPISODE</h3>
+    <h3 style="margin:16px 0 10px;color:#00d4ff">📺 DAFTAR EPISODE</h3>
     <div class="ep-grid">
-      ${episodes.map((ep, i) => `
-        <button data-index="${i}">Eps ${i+1}</button>
-      `).join('')}
+      ${episodes.map((ep, i) => `<button data-index="${i}">Eps ${i+1}</button>`).join('')}
     </div>
   `;
   
@@ -586,12 +641,10 @@ async function openDramaDetail(path, id, title) {
     btn.addEventListener('click', function() {
       epList.querySelectorAll('.ep-grid button').forEach(b => b.classList.remove('active'));
       this.classList.add('active');
-      const index = parseInt(this.dataset.index);
-      playDrama(path, id, index);
+      playDrama(path, id, parseInt(this.dataset.index));
     });
   });
   
-  // Play first
   const firstBtn = epList.querySelector('.ep-grid button');
   if (firstBtn) firstBtn.classList.add('active');
   playDrama(path, id, 0);
@@ -601,7 +654,7 @@ async function playDrama(path, id, epIndex) {
   const iframe = document.getElementById('playerIframe');
   iframe.src = 'about:blank';
   
-  const data = await callAPI('/drama', { 
+  const result = await callAPI('/drama', { 
     action: 'getplay', 
     detailPath: path, 
     id, 
@@ -609,27 +662,26 @@ async function playDrama(path, id, epIndex) {
     ep: String(epIndex) 
   });
   
-  const stream = findStreamUrl(data);
+  showDebug('DRAMA PLAY', result);
+  
+  let stream = findStreamUrl(result.data || result);
+  
+  // Fallback
+  if (!stream && epIndex === 0) {
+    const result2 = await callAPI('/drama', { 
+      action: 'getplay', 
+      detailPath: path, 
+      id, 
+      se: '0', 
+      ep: '1' 
+    });
+    stream = findStreamUrl(result2.data || result2);
+  }
   
   if (stream) {
     iframe.src = stream;
   } else {
-    // Coba dengan ep=1 sebagai fallback
-    if (epIndex === 0) {
-      const data2 = await callAPI('/drama', { 
-        action: 'getplay', 
-        detailPath: path, 
-        id, 
-        se: '0', 
-        ep: '1' 
-      });
-      const stream2 = findStreamUrl(data2);
-      if (stream2) {
-        iframe.src = stream2;
-        return;
-      }
-    }
-    alert('Link streaming tidak ditemukan untuk episode ini');
+    alert('Link streaming tidak ditemukan');
   }
 }
 
@@ -638,97 +690,39 @@ async function playDrama(path, id, epIndex) {
 // ============================================================
 document.getElementById('searchInput').addEventListener('keypress', async function(e) {
   if (e.key !== 'Enter') return;
-  const query = this.value.trim();
-  if (query.length < 2) {
-    alert('Minimal 2 karakter');
-    return;
-  }
+  const q = this.value.trim();
+  if (q.length < 2) return alert('Minimal 2 karakter');
   
   showCatalog();
   const grid = document.getElementById('catalog');
-  grid.innerHTML = '<div class="loading">🔍 Mencari "' + query + '"</div>';
+  grid.innerHTML = '<div class="loading">🔍 Mencari...</div>';
   
   let allResults = [];
   
   // Search Anime
   try {
-    const animeData = await callAPI('/anime', { action: 'home', page: '1' });
-    const animeItems = extractItems(animeData);
-    const filtered = animeItems
-      .filter(item => {
-        const title = extractTitle(item).toLowerCase();
-        return title.includes(query.toLowerCase());
-      })
-      .map(item => normalizeItem(item))
-      .filter(Boolean);
+    const r = await callAPI('/anime', { action: 'home', page: '1' });
+    const items = extractItems(r.data || r, 'search-anime');
+    const filtered = items.filter(item => {
+      const title = extractTitle(item).toLowerCase();
+      return title.includes(q.toLowerCase());
+    });
     allResults = allResults.concat(filtered);
   } catch (e) {}
   
   // Search Drama
   try {
-    const dramaData = await callAPI('/drama', { 
-      action: 'search', 
-      keyword: query,
-      page: '1',
-      perPage: '20'
-    });
-    const dramaItems = extractItems(dramaData);
-    const normalized = dramaItems
-      .map(item => normalizeItem(item))
-      .filter(Boolean);
-    allResults = allResults.concat(normalized);
+    const r = await callAPI('/drama', { action: 'search', keyword: q, page: '1', perPage: '20' });
+    const items = extractItems(r.data || r, 'search-drama');
+    allResults = allResults.concat(items);
   } catch (e) {}
   
   if (allResults.length === 0) {
-    grid.innerHTML = `
-      <div class="empty">
-        Tidak ditemukan hasil untuk "${query}"
-        <br><br>
-        <button onclick="switchCategory('${currentCategory}')">← Kembali</button>
-      </div>
-    `;
+    grid.innerHTML = `<div class="empty">Tidak ditemukan hasil untuk "${q}"<br><button onclick="switchCategory('${currentCategory}')">← Kembali</button></div>`;
     return;
   }
   
-  // Render hasil
-  currentItems = allResults;
-  currentType = 'search';
-  
-  grid.innerHTML = allResults.map((item, index) => {
-    const posterHtml = item.poster 
-      ? `<img class="poster" src="${item.poster}" alt="${item.title}" loading="lazy" 
-            onerror="this.src='https://via.placeholder.com/300x400/1a212c/00d4ff?text=No+Cover'">`
-      : `<div class="poster" style="display:flex;align-items:center;justify-content:center;background:#1a212c;color:#6b7a8f;font-size:14px;text-align:center;padding:20px">No Cover</div>`;
-    
-    return `
-      <div class="card" data-index="${index}">
-        ${posterHtml}
-        <div class="title">${item.title}</div>
-        ${item.year ? `<div class="year">${item.year}</div>` : ''}
-      </div>
-    `;
-  }).join('');
-  
-  // Click handler
-  grid.querySelectorAll('.card').forEach(card => {
-    card.addEventListener('click', function() {
-      const index = parseInt(this.dataset.index);
-      const item = currentItems[index];
-      if (!item) return;
-      
-      const path = item.path || item.id;
-      const id = item.id || item.path;
-      
-      if (path && id) {
-        // Coba sebagai drama dulu
-        openDramaDetail(path, id, item.title);
-      } else if (path) {
-        openAnimeDetail(path, item.title);
-      } else {
-        alert('Data tidak lengkap');
-      }
-    });
-  });
+  renderItems(allResults);
 });
 
 // ============================================================
