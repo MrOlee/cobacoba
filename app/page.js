@@ -3,15 +3,14 @@
 import { useState, useEffect } from 'react';
 
 export default function HomePage() {
-  const [category, setCategory] = useState<'anime' | 'drama'>('anime');
-  const [items, setItems] = useState<any[]>([]);
+  const [category, setCategory] = useState('anime');
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [catalogView, setCatalogView] = useState(true);
-  const [playerData, setPlayerData] = useState<{ title: string; episodes: any[]; path: string; id: string } | null>(null);
+  const [playerData, setPlayerData] = useState(null);
 
-  // Ekstraktor
-  const extractTitle = (item: any) => item?.title || item?.name || item?.caption || 'No Title';
-  const extractPoster = (item: any) => {
+  const extractTitle = (item) => item?.title || item?.name || item?.caption || 'No Title';
+  const extractPoster = (item) => {
     const candidates = ['cover_url', 'cover', 'poster', 'coverUrl', 'image', 'img', 'thumb'];
     for (const key of candidates) {
       const val = item?.[key];
@@ -22,11 +21,10 @@ export default function HomePage() {
     }
     return '';
   };
-  const extractPath = (item: any) => item?.path || item?.slug || item?.detailPath || '';
-  const extractId = (item: any) => item?.id || item?.subjectId || item?.subject_id || '';
+  const extractPath = (item) => item?.path || item?.slug || item?.detailPath || '';
+  const extractId = (item) => item?.id || item?.subjectId || item?.subject_id || '';
 
-  // Fetch Anime
-  const fetchAnime = async (action: string, params: Record<string, string> = {}) => {
+  const fetchAnime = async (action, params = {}) => {
     setLoading(true);
     try {
       const qs = new URLSearchParams({ action, ...params });
@@ -34,7 +32,7 @@ export default function HomePage() {
       const json = await res.json();
       if (json.success) {
         let data = json.data;
-        let rawItems: any[] = [];
+        let rawItems = [];
         if (Array.isArray(data)) rawItems = data;
         else if (data?.data) rawItems = Array.isArray(data.data) ? data.data : [];
         else if (data?.list) rawItems = data.list;
@@ -46,7 +44,7 @@ export default function HomePage() {
     setLoading(false);
   };
 
-  const fetchDrama = async (action: string, params: Record<string, string> = {}) => {
+  const fetchDrama = async (action, params = {}) => {
     setLoading(true);
     try {
       const qs = new URLSearchParams({ action, ...params });
@@ -54,7 +52,7 @@ export default function HomePage() {
       const json = await res.json();
       if (json.success) {
         let data = json.data;
-        let rawItems: any[] = [];
+        let rawItems = [];
         if (Array.isArray(data)) rawItems = data;
         else if (data?.data) rawItems = Array.isArray(data.data) ? data.data : [];
         else if (data?.list) rawItems = data.list;
@@ -71,7 +69,7 @@ export default function HomePage() {
     else fetchDrama('home');
   }, [category]);
 
-  const handleCardClick = (item: any) => {
+  const handleCardClick = (item) => {
     const title = extractTitle(item);
     const path = extractPath(item);
     const id = extractId(item);
@@ -85,7 +83,7 @@ export default function HomePage() {
     }
   };
 
-  const openAnimeDetail = async (path: string, title: string) => {
+  const openAnimeDetail = async (path, title) => {
     setCatalogView(false);
     setPlayerData({ title, episodes: [], path, id: '' });
     try {
@@ -93,11 +91,11 @@ export default function HomePage() {
       const json = await res.json();
       if (json.success) {
         const data = json.data;
-        let eps: any[] = [];
+        let eps = [];
         if (data?.episode_list) eps = data.episode_list;
         else if (data?.episodes) eps = data.episodes;
         else if (Array.isArray(data)) eps = data;
-        setPlayerData(prev => ({ ...prev!, episodes: eps }));
+        setPlayerData(prev => ({ ...prev, episodes: eps }));
         if (eps.length > 0) {
           const firstId = eps[0]?.episode_id || eps[0]?.id || eps[0]?.path || '';
           if (firstId) playAnime(firstId);
@@ -106,8 +104,8 @@ export default function HomePage() {
     } catch (e) { console.error(e); }
   };
 
-  const playAnime = async (epId: string) => {
-    const iframe = document.getElementById('playerIframe') as HTMLIFrameElement | null;
+  const playAnime = async (epId) => {
+    const iframe = document.getElementById('playerIframe');
     if (!iframe) return;
     iframe.src = 'about:blank';
 
@@ -121,7 +119,7 @@ export default function HomePage() {
     } catch (e) { console.error(e); }
   };
 
-  const openDramaDetail = async (path: string, id: string, title: string) => {
+  const openDramaDetail = async (path, id, title) => {
     setCatalogView(false);
     setPlayerData({ title, episodes: [], path, id });
     try {
@@ -129,24 +127,19 @@ export default function HomePage() {
       const json = await res.json();
       if (json.success) {
         const data = json.data;
-        let eps: any[] = [];
+        let eps = [];
         if (data?.episodes) eps = data.episodes;
         else if (data?.chapterList) eps = data.chapterList;
         else if (data?.resourceList) eps = data.resourceList;
         else if (Array.isArray(data)) eps = data;
-        setPlayerData(prev => ({ ...prev!, episodes: eps }));
-        if (eps.length > 0) {
-          playDrama(path, id, 0);
-        } else {
-          playDrama(path, id, 0);
-        }
+        setPlayerData(prev => ({ ...prev, episodes: eps }));
+        playDrama(path, id, 0);
       }
     } catch (e) { console.error(e); }
   };
 
-  const playDrama = async (path: string, id: string, epIndex: number) => {
-    // Deklarasi iframe di awal fungsi
-    const iframe = document.getElementById('playerIframe') as HTMLIFrameElement | null;
+  const playDrama = async (path, id, epIndex) => {
+    const iframe = document.getElementById('playerIframe');
     if (!iframe) return;
     iframe.src = 'about:blank';
 
@@ -160,7 +153,7 @@ export default function HomePage() {
           return;
         }
       }
-      // Fallback: coba ep=1 jika epIndex=0 gagal
+      // Fallback ep=1
       if (epIndex === 0) {
         const res2 = await fetch(`/api/drama?action=getplay&detailPath=${encodeURIComponent(path)}&id=${id}&se=0&ep=1`);
         const json2 = await res2.json();
@@ -172,7 +165,7 @@ export default function HomePage() {
     } catch (e) { console.error(e); }
   };
 
-  const findStreamUrl = (obj: any): string | null => {
+  const findStreamUrl = (obj) => {
     if (!obj) return null;
     if (typeof obj === 'string') {
       if (obj.startsWith('http') || obj.startsWith('//')) {
@@ -242,17 +235,17 @@ export default function HomePage() {
           placeholder="🔍 Cari judul..."
           onKeyDown={async (e) => {
             if (e.key === 'Enter') {
-              const q = (e.target as HTMLInputElement).value.trim();
+              const q = e.target.value.trim();
               if (q.length < 2) return alert('Minimal 2 karakter');
               setLoading(true);
               setCatalogView(true);
-              let allResults: any[] = [];
+              let allResults = [];
               try {
                 const res = await fetch(`/api/anime?action=home&page=1`);
                 const json = await res.json();
                 if (json.success) {
                   let data = json.data;
-                  let rawItems: any[] = [];
+                  let rawItems = [];
                   if (Array.isArray(data)) rawItems = data;
                   else if (data?.data) rawItems = Array.isArray(data.data) ? data.data : [];
                   else if (data?.list) rawItems = data.list;
@@ -266,7 +259,7 @@ export default function HomePage() {
                 const json = await res.json();
                 if (json.success) {
                   let data = json.data;
-                  let rawItems: any[] = [];
+                  let rawItems = [];
                   if (Array.isArray(data)) rawItems = data;
                   else if (data?.data) rawItems = Array.isArray(data.data) ? data.data : [];
                   else if (data?.list) rawItems = data.list;
