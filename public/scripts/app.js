@@ -120,4 +120,177 @@ const App = {
     `).join('');
 
     // Click handler
-    grid
+    grid.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('click', () => {
+        const type = card.dataset.type;
+        const path = card.dataset.path;
+        const title = card.querySelector('.title').textContent;
+        const id = card.dataset.id;
+        if (type === 'anime') {
+          this.openAnimeDetail(path, title);
+        } else {
+          this.openDramaDetail(path, id, title);
+        }
+      });
+    });
+  },
+
+  async openAnimeDetail(path, title) {
+    this.showPlayer();
+    document.getElementById('playerTitle').textContent = title;
+    const epList = document.getElementById('episodeList');
+    epList.innerHTML = '<div class="loading">Memuat episode...</div>';
+
+    try {
+      const result = await API.anime('detail', { path });
+      const data = result.data || {};
+      const episodes = data.episode_list || data.episodes || [];
+      
+      if (episodes.length === 0) {
+        epList.innerHTML = '<div class="empty">Tidak ada episode</div>';
+        return;
+      }
+
+      epList.innerHTML = `
+        <h3>Episode</h3>
+        <div class="episode-grid">
+          ${episodes.map((ep, i) => `
+            <button data-id="${ep.episode_id || ep.id || ep.path}" data-index="${i}">
+              ${i + 1}
+            </button>
+          `).join('')}
+        </div>
+      `;
+
+      // Play first episode
+      const firstId = episodes[0].episode_id || episodes[0].id || episodes[0].path;
+      this.playAnime(firstId);
+
+      // Episode click
+      epList.querySelectorAll('.episode-grid button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          epList.querySelectorAll('.episode-grid button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          this.playAnime(btn.dataset.id);
+        });
+      });
+
+    } catch (error) {
+      epList.innerHTML = `<div class="empty">${error.message}</div>`;
+    }
+  },
+
+  async playAnime(episodeId) {
+    const iframe = document.getElementById('playerIframe');
+    iframe.src = 'about:blank';
+
+    try {
+      const result = await API.anime('play', { episode_id: episodeId });
+      if (result.stream) {
+        iframe.src = result.stream;
+      } else {
+        throw new Error('Link stream tidak ditemukan');
+      }
+    } catch (error) {
+      iframe.src = 'about:blank';
+      alert('Gagal memutar: ' + error.message);
+    }
+  },
+
+  async openDramaDetail(path, id, title) {
+    this.showPlayer();
+    document.getElementById('playerTitle').textContent = title;
+    const epList = document.getElementById('episodeList');
+    epList.innerHTML = '<div class="loading">Memuat episode...</div>';
+
+    try {
+      const result = await API.drama('details', { detailPath: path, id });
+      const data = result.data || {};
+      const episodes = data.episodes || data.chapterList || data.resourceList || [];
+
+      if (episodes.length === 0) {
+        epList.innerHTML = '<div class="empty">Episode tidak tersedia</div>';
+        // Try play anyway
+        this.playDrama(path, id, 0);
+        return;
+      }
+
+      epList.innerHTML = `
+        <h3>Episode</h3>
+        <div class="episode-grid">
+          ${episodes.map((ep, i) => `
+            <button data-index="${i}">${i + 1}</button>
+          `).join('')}
+        </div>
+      `;
+
+      this.playDrama(path, id, 0);
+
+      epList.querySelectorAll('.episode-grid button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          epList.querySelectorAll('.episode-grid button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          this.playDrama(path, id, parseInt(btn.dataset.index));
+        });
+      });
+
+    } catch (error) {
+      epList.innerHTML = `<div class="empty">${error.message}</div>`;
+    }
+  },
+
+  async playDrama(path, id, epIndex) {
+    const iframe = document.getElementById('playerIframe');
+    iframe.src = 'about:blank';
+
+    try {
+      const result = await API.drama('getplay', { 
+        detailPath: path, 
+        id, 
+        se: '0', 
+        ep: String(epIndex) 
+      });
+
+      if (result.stream) {
+        iframe.src = result.stream;
+      } else {
+        throw new Error('Link stream tidak ditemukan');
+      }
+    } catch (error) {
+      iframe.src = 'about:blank';
+      alert('Gagal memutar episode: ' + error.message);
+    }
+  },
+
+  async search(query) {
+    this.showCatalog();
+    const grid = document.getElementById('catalog');
+    grid.innerHTML = '<div class="loading">Mencari...</div>';
+
+    try {
+      const result = await API.search(query);
+      const allData = [...(result.anime || []), ...(result.drama || [])];
+      if (allData.length === 0) {
+        grid.innerHTML = '<div class="empty">Tidak ditemukan hasil untuk "' + query + '"</div>';
+        return;
+      }
+      this.renderGrid(allData, 'all');
+    } catch (error) {
+      grid.innerHTML = `<div class="empty">${error.message}</div>`;
+    }
+  },
+
+  showCatalog() {
+    document.getElementById('catalog').style.display = 'grid';
+    document.getElementById('player').style.display = 'none';
+  },
+
+  showPlayer() {
+    document.getElementById('catalog').style.display = 'none';
+    document.getElementById('player').style.display = 'block';
+    document.getElementById('episodeList').innerHTML = '';
+  }
+};
+
+// Start
+document.addEventListener('DOMContentLoaded', () => App.init());
