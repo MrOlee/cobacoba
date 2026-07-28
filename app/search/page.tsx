@@ -1,40 +1,33 @@
-'use client';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState, Suspense } from 'react';
 import { filmboxAPI } from '@/lib/api';
 import Link from 'next/link';
 
-function SearchContent() {
-  const searchParams = useSearchParams();
-  const query = searchParams.get('q') || '';
-  const [results, setResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: { q?: string };
+}) {
+  const query = searchParams?.q || '';
+  let results: any[] = [];
 
-  useEffect(() => {
-    if (!query) return;
-
-    async function fetchSearch() {
-      setLoading(true);
-      try {
-        const filmboxRes = await filmboxAPI.search(query);
-        const data = filmboxRes?.data?.list || filmboxRes?.list || [];
-        const items = data.map((item: any) => ({
-          id: item.id,
+  if (query.trim()) {
+    try {
+      const filmboxRes = await filmboxAPI.search(query.trim());
+      
+      // Mengambil array hasil dari response API Filmbox
+      const rawList = filmboxRes?.data?.list || filmboxRes?.list || filmboxRes?.data || [];
+      
+      if (Array.isArray(rawList)) {
+        results = rawList.map((item: any) => ({
+          id: item.id || item.subjectId,
           title: item.title || item.name,
-          thumbnail: item.cover || item.poster,
-          detailPath: item.detailPath,
-          provider: 'filmbox',
+          thumbnail: item.cover || item.poster || item.image,
+          detailPath: item.detailPath || '',
         }));
-        setResults(items);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
       }
+    } catch (err) {
+      console.error("Error fetching search results:", err);
     }
-
-    fetchSearch();
-  }, [query]);
+  }
 
   return (
     <div className="space-y-6">
@@ -42,36 +35,34 @@ function SearchContent() {
         Hasil Pencarian: <span className="text-purple-400">"{query}"</span>
       </h1>
 
-      {loading ? (
-        <div className="text-gray-400 py-10 text-center animate-pulse">Mencari anime/drama...</div>
-      ) : results.length > 0 ? (
+      {results.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {results.map((item, idx) => (
             <Link
               key={idx}
-              href={`/watch?subjectId=${item.id}&detailPath=${encodeURIComponent(item.detailPath || '')}&provider=filmbox&title=${encodeURIComponent(item.title)}`}
+              href={`/watch?subjectId=${item.id}&detailPath=${encodeURIComponent(item.detailPath)}&provider=filmbox&title=${encodeURIComponent(item.title)}`}
               className="bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-purple-500 transition group"
             >
-              <div className="aspect-[3/4] relative overflow-hidden">
-                <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+              <div className="aspect-[3/4] relative overflow-hidden bg-gray-800">
+                <img
+                  src={item.thumbnail || '/placeholder.jpg'}
+                  alt={item.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                />
               </div>
               <div className="p-3">
-                <p className="text-xs font-semibold text-gray-200 line-clamp-2">{item.title}</p>
+                <p className="text-xs font-semibold text-gray-200 line-clamp-2 group-hover:text-purple-400 transition">
+                  {item.title}
+                </p>
               </div>
             </Link>
           ))}
         </div>
       ) : (
-        <p className="text-gray-400 py-10 text-center">Tidak ada hasil ditemukan.</p>
+        <div className="py-16 text-center text-gray-400">
+          <p>{query ? 'Tidak ada hasil ditemukan.' : 'Masukkan kata kunci pencarian di atas.'}</p>
+        </div>
       )}
     </div>
-  );
-}
-
-export default function SearchPage() {
-  return (
-    <Suspense fallback={<div className="text-gray-400 text-center py-10">Loading search...</div>}>
-      <SearchContent />
-    </Suspense>
   );
 }
