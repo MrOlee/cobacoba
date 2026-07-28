@@ -67,18 +67,12 @@ module.exports = async (req, res) => {
     }
 
     const response = await fetch(url, options);
-    const text = await response.text();
-
-    try {
-      const data = JSON.parse(text);
-      return res.status(200).json(data);
-    } catch (e) {
-      return res.status(200).json({ 
-        success: false, 
-        raw: text,
-        note: 'Response bukan JSON valid'
-      });
-    }
+    const data = await response.json();
+    
+    // DEBUG
+    console.log('Drama API Response:', JSON.stringify(data, null, 2).slice(0, 500));
+    
+    return res.status(200).json(data);
 
   } catch (error) {
     return res.status(200).json({ 
