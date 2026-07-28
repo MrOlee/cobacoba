@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
   else if (action === "play") targetUrl = `https://indocast.site/api/animekompi/play?episode_id=${encodeURIComponent(episode_id)}`;
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 4500);
+  const timer = setTimeout(() => controller.abort(), 6000);
 
   try {
     const response = await fetch(targetUrl, {
@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
       headers: {
         "Content-Type": "application/json",
         "x-api-key": apiKey,
-        "User-Agent": "okhttp/4.12.0"
+        "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
       },
       signal: controller.signal
     });
